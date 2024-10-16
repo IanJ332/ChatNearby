@@ -1,88 +1,113 @@
-# **Time2Chat: Real-time Online Chat Room**
+# **Time2Chat: Collaborative Real-Time Writing Platform**
 
 ## **Project Overview**
-Time2Chat is a web-based, real-time chat room application that allows users within the same WLAN (Wireless Local Area Network) to connect, create or join chat rooms, and communicate with each other. The application provides a dynamic and interactive chat experience where users can set a username, create chat rooms (as a room "Holder"), or join existing rooms (as a "Participant"). The chat room supports multiple users with randomly generated avatars and allows each user to send messages of up to 250 characters.
+Time2Chat is a web-based, real-time collaborative writing platform where users can anonymously work together on a shared document, similar to Google Docs. Instead of a traditional chat room, Time2Chat provides a large virtual "canvas" or paper where all users can contribute in real time. Each user's updates are saved as text files on the server to provide a record of all changes. The platform offers anonymity to encourage open collaboration, with each user randomly assigned an avatar.
 
-## **Core Features**
-1. **Username Setup and Validation:**
-   - Users must set a username when they first access the website. The username must meet the following criteria:
-     - Length: 6-20 characters.
-     - Allowed characters: Uppercase letters (A-Z), lowercase letters (a-z), digits (0-9), and specific special characters (`~` `!` `@` `#` `$` `%` `^` `&` `*` `()` `+` `=` `_` `-` `{}` `[]` `|` `:` `;` `'` `”` `?` `,` `.`).
+## **Key Features**
+1. **Collaborative Canvas**: 
+   - A large shared canvas where users can collaboratively write and edit content in real-time. This canvas is presented as a long virtual "paper" that users scroll through and interact with.
+  
+2. **Anonymity**: 
+   - Users are assigned random avatars upon joining the platform. No personal information or usernames are required, fostering anonymous collaboration.
 
-2. **Role Selection:**
-   - Users can either:
-     - Create a room as the **Holder**: A room with a randomly generated 9-digit room number is created under the username’s name.
-     - Join as a **Participant**: Users can view existing rooms on the WLAN or enter the 9-digit room number manually to join a specific room.
+3. **Real-Time Text File Storage**: 
+   - Each user’s updates are stored as `.txt` files in a `temp` folder on the server, ensuring that all edits are tracked and saved in real-time. Each update generates a new text file, stored with a timestamp for version control.
 
-3. **Real-time Chat:**
-   - Once in a room, users are assigned a random avatar.
-   - The chat supports sending and receiving real-time messages with a 250-character limit per message.
+4. **Role Selection**:
+   - **Holder**: The user who creates the room and hosts the collaborative canvas.
+   - **Participant**: Users who join an existing room via a room number or by viewing available rooms on the local network.
+   
+5. **Room Creation & Entry**: 
+   - Holders create a room with a randomly generated 9-digit number.
+   - Participants can either view existing rooms or manually enter a room number to join. The room is automatically created on the server with its own `temp` folder for storing user edits.
 
-4. **Avatars and Room Details:**
-   - Each user receives a randomly generated avatar from a folder of pre-uploaded images.
-   - The chat room interface displays avatars of all current participants.
+## **Project Logic**
+- **Server-Side Logic**:
+  - A `temp` folder is created on the server for each new room. All updates made to the canvas by participants are saved as individual `.txt` files in that folder.
+  - Each file is named with a timestamp to ensure that the history of changes can be preserved and tracked.
+  
+- **Client-Side Logic**:
+  - The user interface provides a large editable text area. Any updates made by one user are broadcast to all participants in the room, ensuring real-time synchronization.
+  - Each user’s edits are continuously sent to the server and saved as separate `.txt` files.
 
 ## **Technologies Used**
 - **Frontend**: 
-  - HTML, CSS (for basic layout and design).
-  - JavaScript for client-side interactivity.
-  - **Socket.IO** for real-time communication with the backend.
+  - **HTML5, CSS3** for the user interface.
+  - **JavaScript** for real-time interactions and WebSocket connections.
   
 - **Backend**: 
-  - **Node.js** with **Express**: Serves static frontend files and handles server-side logic.
-  - **Socket.IO**: Manages WebSocket connections to enable real-time chat functionality.
-  
-- **Other Tools**:
-  - Random avatars stored in the `public/avatars` folder for user personalization.
-  - Validation and error-handling for user inputs.
+  - **Node.js** with **Express** for handling requests and serving static files.
+  - **Socket.IO** for real-time communication between the server and clients.
 
-## **Project Setup and Environment**
+- **File System**:
+  - **Node.js**’s **fs** (File System) module is used to create and manage the `temp` folders and save updates as `.txt` files.
 
-### **Requirements:**
-1. **Node.js** (version 12.x or later): The backend server is built with Node.js, which needs to be installed on your system.
-2. **npm** (Node Package Manager): Use npm to install dependencies like Express and Socket.IO.
+## **Folder Structure**
 
-### **Installation Instructions:**
-1. Clone this repository:
+```
+time2chat/
+│
+├── backend/
+│   ├── index.js                # Main backend logic (Node.js + Socket.IO)
+│   └── package.json            # Dependencies and scripts
+│
+├── frontend/
+│   ├── index.html              # Entry page for username and role selection
+│   ├── canvas.html             # Collaborative canvas page
+│   └── chat.js                 # Client-side WebSocket and real-time logic
+│
+├── public/
+│   └── avatars/                # Folder containing user avatars
+│
+├── temp/                       # Dynamic folder for storing room-specific `.txt` updates
+│   └── room_<room_number>/     # Each room has its own folder for storing updates
+│
+└── styles/
+    └── style.css               # CSS for styling the platform
+```
+
+## **Setup and Environment**
+
+### **Requirements**
+- **Node.js** (version 12.x or later)
+- **npm** (Node Package Manager)
+
+### **Installation Instructions**
+1. **Clone this repository**:
    ```bash
    git clone <repository-url>
    cd time2chat
    ```
 
-2. Install dependencies:
+2. **Install dependencies**:
    ```bash
    cd backend
    npm install
    ```
 
-3. Run the server:
+3. **Run the server**:
    ```bash
    npm start
    ```
 
-   The server will run on **localhost:3000** by default.
+4. **Access the platform**:
+   - Open your browser and navigate to `http://localhost:3000`.
+   - To allow others on the same WLAN to access the platform, use your computer’s local IP address, e.g., `http://192.168.0.10:3000`.
 
-### **Accessing the Chat Room:**
-- Open your web browser and go to:
-  ```bash
-  http://<your-local-IP>:3000
-  ```
-  Replace `<your-local-IP>` with your computer's local IP address to allow users on the same WLAN to access the site.
+### **Usage Instructions**
+1. **Create or Join a Room**:
+   - Users first select whether to be a **Holder** (room creator) or **Participant** (room joiner).
+   - As a Holder, a new room is created with a 9-digit number, and a folder is created under `/temp` for storing `.txt` files.
+   - As a Participant, you can join existing rooms by entering the room number.
 
-### **Folder Structure**
-- **backend/**: Contains the server-side logic and WebSocket communication.
-  - `index.js`: The main server file.
-  - `package.json`: Lists dependencies and scripts.
-  
-- **frontend/**: Contains the HTML pages and JavaScript logic for user interactions.
-  - `index.html`: Username setup and role selection.
-  - `chat.js`: The frontend logic for real-time communication using WebSockets.
-  
-- **public/avatars/**: Stores pre-generated avatars for users.
-  
-- **styles/**: Contains CSS files for styling the web pages.
+2. **Collaborate**:
+   - Once inside the room, users are presented with a shared canvas.
+   - Any edits made are broadcast to all users in real-time and stored on the server.
 
-## **How It Works**
-1. **Username Setup**: When users visit the site, they must first set a username. This username is validated to ensure it meets the specified criteria.
-2. **Role Selection**: After setting the username, users are given the choice to either create a new room (Holder) or join an existing room (Participant).
-3. **Chat Functionality**: Once in a room, the users can chat in real-time. Each user is assigned a random avatar, and their messages are limited to 250 characters.
+3. **Storage**:
+   - All user changes are saved to the `temp/` folder in the backend. Each room has its own subfolder, where updates are stored as `.txt` files with timestamps for tracking.
+
+## **Future Enhancements**
+- **Version Control**: Adding the ability to roll back changes or merge `.txt` files for better file management.
+- **UI Enhancements**: Improving the canvas interface for a smoother user experience.
+- **Additional Features**: Supporting markdown or rich text editing, allowing users to add formatting to their contributions.
