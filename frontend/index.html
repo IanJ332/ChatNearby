@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time2Chat</title>
+    <link rel="stylesheet" href="/styles/style.css">
+</head>
+<body>
+    <div class="username-setup">
+        <h1>Welcome to Time2Chat</h1>
+        <form id="username-form">
+            <input type="text" id="username" placeholder="Enter username" required />
+            <button type="submit">Submit</button>
+        </form>
+        <div id="error-message"></div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        document.getElementById('username-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+
+            // Basic validation for username (6-20 characters)
+            const usernamePattern = /^[A-Za-z0-9~`!@#$%^&*()+=_\-{}[\]|:;”’?/<>,.]{6,20}$/;
+            if (!usernamePattern.test(username)) {
+                document.getElementById('error-message').textContent = 'Invalid username format';
+                return;
+            }
+
+            window.location.href = `/role.html?username=${username}`;  // Redirect to role selection
+        });
+    </script>
+</body>
+</html>

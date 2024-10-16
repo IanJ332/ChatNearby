@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collaborative Canvas</title>
+    <link rel="stylesheet" href="/styles/style.css">
+</head>
+<body>
+    <h1>Collaborative Canvas</h1>
+    <div id="canvas">
+        <textarea id="editor" placeholder="Start writing..."></textarea>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const urlParams = new URLSearchParams(window.location.search);
+        const roomNumber = urlParams.get('room');
+        const editor = document.getElementById('editor');
+
+        // Listen for canvas updates from server
+        socket.on('canvas update', (content) => {
+            editor.value = content;  // Update the editor with the latest content
+        });
+
+        // Send updates to the server when the editor changes
+        editor.addEventListener('input', () => {
+            const content = editor.value;
+            socket.emit('canvas update', { roomNumber, content });
+        });
+
+        // Join the room on load
+        socket.emit('join room', roomNumber, 'Anonymous', (response) => {
+            if (!response.success) {
+                alert('Room not found!');
+                window.location.href = '/';
+            }
+        });
+    </script>
+</body>
+</html>
