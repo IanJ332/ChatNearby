@@ -1,6 +1,117 @@
 # 局域网聊天室 / Local Network Chat Room
 
 [English](#local-network-chat-room) | [中文](#局域网聊天室-1)
+## Local Network Chat Room
+
+### Project Overview
+The Local Network Chat Room is a web-based real-time communication platform that allows users on a local network to chat through their browsers. Users can set their own names and avatars, and all chat records are saved to log files when reset. The application supports both Chinese and English interfaces and is optimized for both mobile and desktop devices.
+
+### Main Features
+1. **Real-time Chat**:
+   - Users can send and receive messages in real-time
+   - Support for system messages (user join/leave notifications)
+   - Display of online user list and count
+
+2. **User Identity**:
+   - Users can set their own names (2-20 characters)
+   - Users can choose default avatars or upload custom ones
+   - Username uniqueness check to avoid duplicate names
+
+3. **Language Support**:
+   - Supports switching between Chinese and English interfaces
+   - User language preferences are saved
+
+4. **Chat History**:
+   - Reset chat room feature that saves chat history to log files
+   - Logs organized by year/month/day
+
+5. **Device Compatibility**:
+   - Responsive design compatible with desktop and mobile devices
+   - Optimized for touch screen devices
+
+### Technology Stack
+- **Frontend**: HTML, CSS, JavaScript
+- **Backend**: Node.js, Express, Socket.IO
+- **File System**: Node.js fs module for log storage
+
+### Installation Steps
+
+1. **Clone Repository**:
+   ```bash
+   git clone <repository-url>
+   cd local-chat-room
+   ```
+
+2. **Install Dependencies**:
+   ```bash
+   cd backend
+   npm install
+   ```
+
+3. **Prepare Default Avatars**:
+   Place default avatar images in the `frontend/images/avatars/` directory, named from `avatar1.png` to `avatar6.png`
+
+4. **Start Server**:
+   ```bash
+   npm start
+   ```
+
+5. **Access Chat Room**:
+   - Local access: http://localhost:3000
+   - Other devices on local network: http://[Your-IP-Address]:3000
+
+### Usage Instructions
+1. Set username and select/upload avatar on the login page
+2. Choose interface language (Chinese or English)
+3. After entering the chat room, you can see the online user list and chat history
+4. Enter messages in the bottom input box and send
+5. Administrators can click the "Reset Chat Room" button to clear current chat history
+
+### Directory Structure
+```
+local-chat-room/
+├── backend/           # Backend code
+│   ├── index.js       # Main server code
+│   └── package.json   # Dependencies configuration
+├── frontend/          # Frontend code
+│   ├── index.html     # Login page
+│   ├── chat.html      # Chat room page
+│   ├── images/        # Image resources
+│   │   └── avatars/   # Avatar images
+│   └── styles/        # Style files
+│       └── style.css  # Main stylesheet
+├── logs/              # Chat history logs (auto-created)
+├── uploads/           # User uploaded avatars (auto-created)
+└── temp/              # Temporary files (auto-created)
+```
+
+### Version Information
+- Version: 1.0.1
+- Update Date: 2025-02-27
+
+## Changes in v1.0.1
+
+### Automatic IP Detection
+
+The application now automatically detects your local IP address. When the server starts, it will display the actual URL that can be shared with friends on the same network, eliminating the need to manually replace "YOUR_IP_ADDRESS" with your actual IP.
+
+Example output:
+```
+Server running at http://localhost:3000
+LAN users can access via your IP address: http://192.168.1.5:3000
+```
+
+You can simply copy and paste this URL to share with friends.
+
+### License
+This project is dual-licensed, you may choose either of the following licenses:
+
+- [MIT License](LICENSE-MIT)
+- [Apache License 2.0](LICENSE-APACHE)
+
+Using this software indicates your agreement with the terms of your chosen license.
+
+---
 
 ## 局域网聊天室
 
@@ -87,8 +198,23 @@ local-chat-room/
 ```
 
 ### 版本信息
-- 版本号：1.0
+- 版本号：1.0.1
 - 更新日期：2025-02-27
+
+## v1.0.1 版本更新内容
+
+### 自动IP检测
+
+应用程序现在可以自动检测您的本地IP地址。当服务器启动时，它将显示可以与同一网络上的朋友共享的实际URL，无需手动将"YOUR_IP_ADDRESS"替换为您的实际IP。
+
+输出示例：
+```
+服务器运行在 http://localhost:3000
+局域网用户可以通过您的IP地址访问: http://192.168.1.5:3000
+```
+
+您可以直接复制粘贴此URL与朋友分享。
+
 
 ### 许可证
 本项目采用双重许可模式，您可以选择使用以下任一许可证：
@@ -97,101 +223,3 @@ local-chat-room/
 - [Apache 许可证 2.0](LICENSE-APACHE)
 
 选择使用本软件即表示您同意遵守所选许可证的条款。
-
----
-
-## Local Network Chat Room
-
-### Project Overview
-The Local Network Chat Room is a web-based real-time communication platform that allows users on a local network to chat through their browsers. Users can set their own names and avatars, and all chat records are saved to log files when reset. The application supports both Chinese and English interfaces and is optimized for both mobile and desktop devices.
-
-### Main Features
-1. **Real-time Chat**:
-   - Users can send and receive messages in real-time
-   - Support for system messages (user join/leave notifications)
-   - Display of online user list and count
-
-2. **User Identity**:
-   - Users can set their own names (2-20 characters)
-   - Users can choose default avatars or upload custom ones
-   - Username uniqueness check to avoid duplicate names
-
-3. **Language Support**:
-   - Supports switching between Chinese and English interfaces
-   - User language preferences are saved
-
-4. **Chat History**:
-   - Reset chat room feature that saves chat history to log files
-   - Logs organized by year/month/day
-
-5. **Device Compatibility**:
-   - Responsive design compatible with desktop and mobile devices
-   - Optimized for touch screen devices
-
-### Technology Stack
-- **Frontend**: HTML, CSS, JavaScript
-- **Backend**: Node.js, Express, Socket.IO
-- **File System**: Node.js fs module for log storage
-
-### Installation Steps
-
-1. **Clone Repository**:
-   ```bash
-   git clone <repository-url>
-   cd local-chat-room
-   ```
-
-2. **Install Dependencies**:
-   ```bash
-   cd backend
-   npm install
-   ```
-
-3. **Prepare Default Avatars**:
-   Place default avatar images in the `frontend/images/avatars/` directory, named from `avatar1.png` to `avatar6.png`
-
-4. **Start Server**:
-   ```bash
-   npm start
-   ```
-
-5. **Access Chat Room**:
-   - Local access: http://localhost:3000
-   - Other devices on local network: http://[Your-IP-Address]:3000
-
-### Usage Instructions
-1. Set username and select/upload avatar on the login page
-2. Choose interface language (Chinese or English)
-3. After entering the chat room, you can see the online user list and chat history
-4. Enter messages in the bottom input box and send
-5. Administrators can click the "Reset Chat Room" button to clear current chat history
-
-### Directory Structure
-```
-local-chat-room/
-├── backend/           # Backend code
-│   ├── index.js       # Main server code
-│   └── package.json   # Dependencies configuration
-├── frontend/          # Frontend code
-│   ├── index.html     # Login page
-│   ├── chat.html      # Chat room page
-│   ├── images/        # Image resources
-│   │   └── avatars/   # Avatar images
-│   └── styles/        # Style files
-│       └── style.css  # Main stylesheet
-├── logs/              # Chat history logs (auto-created)
-├── uploads/           # User uploaded avatars (auto-created)
-└── temp/              # Temporary files (auto-created)
-```
-
-### Version Information
-- Version: 1.0
-- Update Date: 2025-02-27
-
-### License
-This project is dual-licensed, you may choose either of the following licenses:
-
-- [MIT License](LICENSE-MIT)
-- [Apache License 2.0](LICENSE-APACHE)
-
-Using this software indicates your agreement with the terms of your chosen license.
