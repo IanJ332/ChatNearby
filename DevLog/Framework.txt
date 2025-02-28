@@ -1,0 +1,248 @@
+系统架构图
+┌───────────────┐       WebSocket       ┌─────────────┐
+│ 浏览器客户端   │ ◄───────────────────► │ 主服务器     │
+│ (React/Vue)   │      HTTP API         │ (Node.js)   │
+└───────────────┘                       └──────┬──────┘
+                                           │
+                                      ┌─────▼─────┐
+                                      │ 管理CLI   │
+                                      │ (Inquirer)│
+                                      └───────────┘
+
+模块 1: 用户会话管理 (P0)
+逻辑流程
+sequenceDiagram
+    participant Client
+    participant Server
+    participant DB
+
+    Client->>Server: POST /login (name, avatar)
+    Server->>DB: 检查用户名冲突
+    DB-->>Server: 返回校验结果
+    alt 名称可用
+        Server->>DB: 创建用户会话
+        Server-->>Client: 返回JWT令牌 + 用户ID
+        Client->>Client: 存储到localStorage
+    else 名称重复
+        Server-->>Client: 返回错误码409
+    end
+
+技术细节
+会话保持：使用JWT令牌实现无状态认证
+// 登录成功后生成令牌
+const token = jwt.sign(
+  { userId: user.id, ip: req.ip }, 
+  process.env.SECRET, 
+  { expiresIn: '8h' }
+);
+- 刷新恢复：客户端每次加载时自动发送/validate端点验证令牌
+
+- 服务器关闭影响：所有JWT令牌失效，用户需重新登录
+
+----------------------------------------------------------------------------
+
+模块 2: 管理员系统 (P0)
+管理CLI界面流程
+
+# 启动管理界面
+$ npm run admin
+
+[ChatNearby Admin Panel v1.0]
+当前在线用户: 15
+封禁IP数量: 2
+
+选择操作:
+1) 实时监控聊天室
+2) 用户权限管理
+3) 封禁系统
+4) 导出日志
+5) 退出
+> 2
+
+请输入目标用户ID/IP: 192.168.1.100
+检测到用户: "John" (ID: abc123)
+
+选择操作:
+U) 提升为管理员
+S) 禁言用户
+B) 封禁IP
+C) 取消
+> B
+
+请输入封禁时长 (分钟): 1440
+✅ 已封禁 IP 192.168.1.100 至 2024-03-15 12:00:00
+
+权限校验逻辑
+// 中间件示例
+function enforceAdmin(req, res, next) {
+  const user = req.user;
+  
+  if (user.role === 'root') return next();
+  if (user.role === 'admin' && req.method !== 'DELETE') return next();
+  
+  res.status(403).json({ error: 'INSUFFICIENT_PERMISSION' });
+}
+
+// 路由保护示例
+app.delete('/chatrooms/:id', enforceAdmin, (req, res) => {
+  // 只有root可删除聊天室
+});
+
+封禁系统设计
+// 封禁检查中间件
+function checkBanStatus(req, res, next) {
+  const ip = req.ip;
+  const banEntry = bans.get(ip);
+  
+  if (banEntry && banEntry.until > Date.now()) {
+    return res.status(403).json({
+      error: 'BANNED',
+      until: banEntry.until,
+      reason: banEntry.reason
+    });
+  }
+  
+  next();
+}
+
+// 定时解封任务
+setInterval(() => {
+  const now = Date.now();
+  bans.forEach((entry, ip) => {
+    if (entry.until <= now) {
+      bans.delete(ip);
+    }
+  });
+}, 60000); // 每分钟检查一次
+
+----------------------------------------------------------------------------
+模块 3: 消息系统 (P0)
+消息发送流程
+sequenceDiagram
+    participant ClientA
+    participant Server
+    participant ClientB
+
+    ClientA->>Server: WebSocket发送消息
+    Note over Server: 消息结构
+    {
+      "type": "chat",
+      "from": "user123",
+      "content": "<加密内容>",
+      "timestamp": 1620000000
+    }
+    
+    Server->>Server: 验证发送者权限/封禁状态
+    alt 验证通过
+        Server->>ClientB: 广播消息
+        Server->>DB: 记录加密日志
+    else 无权限
+        Server->>ClientA: 发送错误通知
+    end
+
+    加密方案实现
+    // 客户端加密流程
+async function encryptMessage(content, receiverPublicKey) {
+  const aesKey = await crypto.subtle.generateKey(
+    { name: "AES-GCM", length: 256 },
+    true,
+    ["encrypt", "decrypt"]
+  );
+  
+  // 使用AES加密内容
+  const encryptedContent = await crypto.subtle.encrypt(
+    { name: "AES-GCM", iv: crypto.getRandomValues(new Uint8Array(12)) },
+    aesKey,
+    new TextEncoder().encode(content)
+  );
+  
+  // 使用接收方公钥加密AES密钥
+  const encryptedKey = await crypto.subtle.encrypt(
+    { name: "RSA-OAEP" },
+    receiverPublicKey,
+    await crypto.subtle.exportKey("raw", aesKey)
+  );
+  
+  return {
+    content: arrayBufferToBase64(encryptedContent),
+    key: arrayBufferToBase64(encryptedKey)
+  };
+}
+----------------------------------------------------------------------------
+模块 4: 数据持久化
+数据结构设计
+// 用户会话存储
+{
+  _id: "user_abc123",
+  name: "John",
+  role: "user",
+  ip: "192.168.1.100",
+  lastActive: ISODate("2024-03-14T10:00:00Z"),
+  publicKey: "-----BEGIN PUBLIC KEY-----\n...",
+  bannedUntil: null
+}
+
+// 聊天日志
+{
+  timestamp: ISODate("2024-03-14T10:00:00Z"),
+  encryptedContent: "aGVsbG8h...",
+  senderId: "user_abc123",
+  recipient: "all", // 或指定用户ID
+  metadata: {
+    iv: "base64_iv",
+    key: "rsa_encrypted_aes_key"
+  }
+}
+
+刷新/重连处理
+客户端检测断线：监听WebSocket onclose 事件
+
+自动重连机制：
+let reconnectAttempts = 0;
+
+function connect() {
+  const ws = new WebSocket('wss://localhost:3000');
+  
+  ws.onclose = () => {
+    const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
+    setTimeout(connect, delay);
+    reconnectAttempts++;
+  };
+}
+状态恢复：重连后发送/restore请求，用JWT恢复用户会话
+
+模块 5: 异常处理方案
+典型错误场景处理
+场景	        客户端处理	            服务端处理
+断线重连	    显示连接状态指示器	     保留用户会话15分钟
+消息发送失败	本地暂存队列	         返回错误代码+原因
+权限变更	    强制刷新页面	         广播FORCE_LOGOUT事件
+加密失败	    显示"安全错误"提示	     记录安全事件日志
+
+# 启动主服务
+npm run start
+
+# 启动管理CLI (新终端)
+npm run admin
+
+# 生产环境启动
+pm2 start ecosystem.config.js
+
+测试用例示例
+管理员权限提升攻击测试
+
+步骤：普通用户尝试发送管理员API请求
+
+预期结果：返回403错误并记录安全事件
+
+跨设备会话冲突测试
+
+步骤：同一用户从两个设备同时登录
+
+预期结果：旧会话被强制注销
+
+加密消息篡改测试
+
+步骤：修改传输中的加密消息体
+
+预期结果：接收方解密失败并报告异常
