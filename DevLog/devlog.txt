@@ -1,0 +1,19 @@
+1. amdin classification, root should be the highest level 1 administrator, can delete chat rooms, can ban users, can set administrators. Level 2 ordinary administrators can ban users.
+2. Dark mode needs to be added later, first the default browser mode, and then users can adjust it manually
+3. There are still problems with the mobile port, see the photos for details
+5. Rename should exist, and the renamed name cannot be the same as the person who can speak now.
+6. The background should display the IP and ID.
+7. There is a ban time (ban IP)
+8. There should be a management dashboard, which is implemented through cmd and can be used after npm start. I haven't thought about what features it should have, but I can confirm that the process of banning people or increasing management permissions should be:
+List of people in the chat room:
+1. [Name] - [IP address]
+． ． ．
+User input: 1
+
+Select operation:
+U: Increase administrator privileges; S: Ban; B: Ban this IP and do not allow it to enter my chat room
+
+Then the corresponding person with increased administrator privileges cannot be banned or banned from speaking
+After banning, you can select the ban time in minutes.
+The banned IP will be stored in a system file and can be deleted by the user
+The storage cell is [Name] - [IP address]: [Banned time]
