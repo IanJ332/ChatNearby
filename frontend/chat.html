@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>局域网聊天室</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .sidebar {
+            width: 240px;
+            background-color: #2c3e50;
+            color: white;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .room-info {
+            padding: 15px;
+            background-color: #34495e;
+            text-align: center;
+        }
+        
+        .room-info h1 {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+        
+        .users-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        
+        .user-item {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+        
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            margin-right: 10px;
+            object-fit: cover;
+        }
+        
+        .admin-controls {
+            padding: 15px;
+            border-top: 1px solid #3a506b;
+        }
+        
+        .admin-controls button {
+            width: 100%;
+            padding: 10px;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: white;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+        }
+        
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+            object-fit: cover;
+        }
+        
+        .message-content {
+            max-width: 70%;
+        }
+        
+        .message-header {
+            display: flex;
+            align-items: baseline;
+            margin-bottom: 5px;
+        }
+        
+        .message-username {
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        .message-time {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+        }
+        
+        .message-text {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 8px;
+            word-break: break-word;
+        }
+        
+        .message.self {
+            flex-direction: row-reverse;
+            align-self: flex-end;
+        }
+        
+        .message.self .message-avatar {
+            margin-right: 0;
+            margin-left: 10px;
+        }
+        
+        .message.self .message-content {
+            align-items: flex-end;
+        }
+        
+        .message.self .message-header {
+            flex-direction: row-reverse;
+        }
+        
+        .message.self .message-username {
+            margin-right: 0;
+            margin-left: 8px;
+        }
+        
+        .message.self .message-text {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .message.system .message-text {
+            background-color: #f8f9fa;
+            color: #6c757d;
+            font-style: italic;
+            border: 1px dashed #dee2e6;
+        }
+        
+        .message-input {
+            display: flex;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .message-input textarea {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: none;
+            font-family: inherit;
+            font-size: 16px;
+        }
+        
+        .message-input button {
+            padding: 0 20px;
+            margin-left: 10px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .message-input button:hover {
+            background-color: #2980b9;
+        }
+        
+        .message-input button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .chat-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                max-height: 200px;
+            }
+            
+            .message-content {
+                max-width: 85%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="sidebar">
+            <div class="room-info">
+                <h1>局域网聊天室</h1>
+                <p id="online-count">在线人数: 0</p>
+            </div>
+            <div class="users-list" id="users-list">
+                <!-- 用户列表会在这里动态生成 -->
+            </div>
+            <div class="admin-controls">
+                <button id="reset-chat">重置聊天室</button>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="chat-messages" id="chat-messages">
+                <!-- 聊天消息会在这里动态生成 -->
+            </div>
+            
+            <div class="message-input">
+                <textarea id="message-input" placeholder="输入消息..." rows="2"></textarea>
+                <button id="send-button">发送</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        // 从本地存储获取用户信息
+        const username = localStorage.getItem('chat_username');
+        const userAvatar = localStorage.getItem('chat_avatar');
+        
+        // 如果没有用户信息，重定向回登录页面
+        if (!username || !userAvatar) {
+            window.location.href = '/';
+        }
+        
+        const socket = io();
+        const messagesList = document.getElementById('chat-messages');
+        const usersList = document.getElementById('users-list');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const onlineCountEl = document.getElementById('online-count');
+        const resetButton = document.getElementById('reset-chat');
+        
+        // 格式化时间
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+        
+        // 创建消息元素
+        function createMessageElement(message, isSelf = false) {
+            const messageEl = document.createElement('div');
+            messageEl.classList.add('message');
+            
+            if (isSelf) {
+                messageEl.classList.add('self');
+            }
+            
+            if (message.system) {
+                messageEl.classList.add('system');
+                messageEl.innerHTML = `
+                    <div class="message-content">
+                        <div class="message-text">${message.text}</div>
+                    </div>
+                `;
+            } else {
+                messageEl.innerHTML = `
+                    <img class="message-avatar" src="${message.avatar || '/images/avatars/avatar1.png'}" alt="${message.username}">
+                    <div class="message-content">
+                        <div class="message-header">
+                            <span class="message-username">${message.username}</span>
+                            <span class="message-time">${formatTime(message.timestamp)}</span>
+                        </div>
+                        <div class="message-text">${message.text}</div>
+                    </div>
+                `;
+            }
+            
+            return messageEl;
+        }
+        
+        // 更新用户列表
+        function updateUsersList(users) {
+            usersList.innerHTML = '';
+            users.forEach(user => {
+                const userEl = document.createElement('div');
+                userEl.classList.add('user-item');
+                userEl.innerHTML = `
+                    <img class="user-avatar" src="${user.avatar || '/images/avatars/avatar1.png'}" alt="${user.username}">
+                    <span>${user.username}</span>
+                `;
+                usersList.appendChild(userEl);
+            });
+            
+            onlineCountEl.textContent = `在线人数: ${users.length}`;
+        }
+        
+        // 发送消息
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (message) {
+                socket.emit('chat message', message);
+                messageInput.value = '';
+            }
+        }
+        
+        // 加入聊天室
+        socket.emit('join room', {
+            roomId: 'main',
+            username,
+            avatar: userAvatar
+        }, function(response) {
+            if (!response.success) {
+                alert(response.message);
+                localStorage.removeItem('chat_username');
+                localStorage.removeItem('chat_avatar');
+                window.location.href = '/';
+                return;
+            }
+            
+            // 显示历史消息
+            response.messages.forEach(msg => {
+                const isSelf = msg.username === username;
+                const messageEl = createMessageElement(msg, isSelf);
+                messagesList.appendChild(messageEl);
+            });
+            
+            // 滚动到最新消息
+            messagesList.scrollTop = messagesList.scrollHeight;
+            
+            // 更新用户列表
+            updateUsersList(Object.values(response.users));
+        });
+        
+        // 监听新消息
+        socket.on('chat message', function(message) {
+            const isSelf = message.username === username;
+            const messageEl = createMessageElement(message, isSelf);
+            messagesList.appendChild(messageEl);
+            
+            // 滚动到最新消息
+            messagesList.scrollTop = messagesList.scrollHeight;
+        });
+        
+        // 监听用户加入
+        socket.on('user joined', function(data) {
+            // 添加系统消息
+            if (data.message) {
+                const messageEl = createMessageElement(data.message, false);
+                messagesList.appendChild(messageEl);
+                messagesList.scrollTop = messagesList.scrollHeight;
+            }
+            
+            // 更新用户列表
+            socket.emit('join room', { roomId: 'main', username, avatar: userAvatar }, response => {
+                if (response.success) {
+                    updateUsersList(Object.values(response.users));
+                }
+            });
+        });
+        
+        // 监听用户离开
+        socket.on('user left', function(data) {
+            // 添加系统消息
+            if (data.message) {
+                const messageEl = createMessageElement(data.message, false);
+                messagesList.appendChild(messageEl);
+                messagesList.scrollTop = messagesList.scrollHeight;
+            }
+            
+            // 更新用户列表
+            socket.emit('join room', { roomId: 'main', username, avatar: userAvatar }, response => {
+                if (response.success) {
+                    updateUsersList(Object.values(response.users));
+                }
+            });
+        });
+        
+        // 监听聊天室重置
+        socket.on('room reset', function(message) {
+            // 清空聊天记录
+            messagesList.innerHTML = '';
+            
+            // 添加重置消息
+            const messageEl = createMessageElement(message, false);
+            messagesList.appendChild(messageEl);
+        });
+        
+        // 发送按钮点击事件
+        sendButton.addEventListener('click', sendMessage);
+        
+        // 输入框按下Enter键事件
+        messageInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+        
+        // 重置聊天室按钮点击事件
+        resetButton.addEventListener('click', function() {
+            if (confirm('确定要重置聊天室吗？所有聊天记录将被保存到日志文件。')) {
+                socket.emit('reset room', 'main');
+            }
+        });
+    </script>
+</body>
+</html>

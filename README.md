@@ -1,113 +1,81 @@
-# **Time2Chat: Collaborative Real-Time Writing Platform**
+# 局域网聊天室应用安装和使用说明
 
-## **Project Overview**
-Time2Chat is a web-based, real-time collaborative writing platform where users can anonymously work together on a shared document, similar to Google Docs. Instead of a traditional chat room, Time2Chat provides a large virtual "canvas" or paper where all users can contribute in real time. Each user's updates are saved as text files on the server to provide a record of all changes. The platform offers anonymity to encourage open collaboration, with each user randomly assigned an avatar.
+## 环境要求
+- Node.js (推荐 v14.x 或更高版本)
+- npm (Node 包管理器)
 
-## **Key Features**
-1. **Collaborative Canvas**: 
-   - A large shared canvas where users can collaboratively write and edit content in real-time. This canvas is presented as a long virtual "paper" that users scroll through and interact with.
-  
-2. **Anonymity**: 
-   - Users are assigned random avatars upon joining the platform. No personal information or usernames are required, fostering anonymous collaboration.
+## 安装步骤
 
-3. **Real-Time Text File Storage**: 
-   - Each user’s updates are stored as `.txt` files in a `temp` folder on the server, ensuring that all edits are tracked and saved in real-time. Each update generates a new text file, stored with a timestamp for version control.
+1. **下载项目文件**
+   将所有项目文件下载到您的计算机上，保持目录结构不变。
 
-4. **Role Selection**:
-   - **Holder**: The user who creates the room and hosts the collaborative canvas.
-   - **Participant**: Users who join an existing room via a room number or by viewing available rooms on the local network.
-   
-5. **Room Creation & Entry**: 
-   - Holders create a room with a randomly generated 9-digit number.
-   - Participants can either view existing rooms or manually enter a room number to join. The room is automatically created on the server with its own `temp` folder for storing user edits.
-
-## **Project Logic**
-- **Server-Side Logic**:
-  - A `temp` folder is created on the server for each new room. All updates made to the canvas by participants are saved as individual `.txt` files in that folder.
-  - Each file is named with a timestamp to ensure that the history of changes can be preserved and tracked.
-  
-- **Client-Side Logic**:
-  - The user interface provides a large editable text area. Any updates made by one user are broadcast to all participants in the room, ensuring real-time synchronization.
-  - Each user’s edits are continuously sent to the server and saved as separate `.txt` files.
-
-## **Technologies Used**
-- **Frontend**: 
-  - **HTML5, CSS3** for the user interface.
-  - **JavaScript** for real-time interactions and WebSocket connections.
-  
-- **Backend**: 
-  - **Node.js** with **Express** for handling requests and serving static files.
-  - **Socket.IO** for real-time communication between the server and clients.
-
-- **File System**:
-  - **Node.js**’s **fs** (File System) module is used to create and manage the `temp` folders and save updates as `.txt` files.
-
-## **Folder Structure**
-
-```
-time2chat/
-│
-├── backend/
-│   ├── index.js                # Main backend logic (Node.js + Socket.IO)
-│   └── package.json            # Dependencies and scripts
-│
-├── frontend/
-│   ├── index.html              # Entry page for username and role selection
-│   ├── canvas.html             # Collaborative canvas page
-│   └── chat.js                 # Client-side WebSocket and real-time logic
-│
-├── public/
-│   └── avatars/                # Folder containing user avatars
-│
-├── temp/                       # Dynamic folder for storing room-specific `.txt` updates
-│   └── room_<room_number>/     # Each room has its own folder for storing updates
-│
-└── styles/
-    └── style.css               # CSS for styling the platform
-```
-
-## **Setup and Environment**
-
-### **Requirements**
-- **Node.js** (version 12.x or later)
-- **npm** (Node Package Manager)
-
-### **Installation Instructions**
-1. **Clone this repository**:
-   ```bash
-   git clone <repository-url>
-   cd time2chat
-   ```
-
-2. **Install dependencies**:
+2. **安装依赖**
    ```bash
    cd backend
    npm install
    ```
 
-3. **Run the server**:
+3. **准备默认头像**
+   在 `frontend/images/avatars/` 目录下放置6个默认头像图片，命名为 `avatar1.png` 到 `avatar6.png`。
+   
+   您可以使用任何头像图片，但确保它们是正方形的，并且文件名与代码中的一致。
+
+4. **启动服务器**
    ```bash
    npm start
    ```
+   
+   如果要在开发模式下运行（文件更改时自动重启服务器）：
+   ```bash
+   npm run dev
+   ```
 
-4. **Access the platform**:
-   - Open your browser and navigate to `http://localhost:3000`.
-   - To allow others on the same WLAN to access the platform, use your computer’s local IP address, e.g., `http://192.168.0.10:3000`.
+5. **访问聊天室**
+   - 在运行服务器的计算机上打开浏览器，访问 `http://localhost:3000`
+   - 局域网内的其他用户可以通过您计算机的 IP 地址访问，例如 `http://192.168.0.123:3000`
 
-### **Usage Instructions**
-1. **Create or Join a Room**:
-   - Users first select whether to be a **Holder** (room creator) or **Participant** (room joiner).
-   - As a Holder, a new room is created with a 9-digit number, and a folder is created under `/temp` for storing `.txt` files.
-   - As a Participant, you can join existing rooms by entering the room number.
+## 查找您的局域网 IP 地址
 
-2. **Collaborate**:
-   - Once inside the room, users are presented with a shared canvas.
-   - Any edits made are broadcast to all users in real-time and stored on the server.
+### Windows
+1. 按下 `Win + R`，输入 `cmd` 打开命令提示符
+2. 输入 `ipconfig` 并按回车
+3. 查找 "IPv4 地址" 字段，这就是您的局域网 IP
 
-3. **Storage**:
-   - All user changes are saved to the `temp/` folder in the backend. Each room has its own subfolder, where updates are stored as `.txt` files with timestamps for tracking.
+### macOS
+1. 打开系统偏好设置 > 网络
+2. 选择活动的网络连接（如 Wi-Fi 或以太网）
+3. 您的 IP 地址将显示在右侧面板中
 
-## **Future Enhancements**
-- **Version Control**: Adding the ability to roll back changes or merge `.txt` files for better file management.
-- **UI Enhancements**: Improving the canvas interface for a smoother user experience.
-- **Additional Features**: Supporting markdown or rich text editing, allowing users to add formatting to their contributions.
+### Linux
+1. 打开终端
+2. 输入 `hostname -I` 或 `ip addr` 命令
+3. 查找您的局域网 IP 地址
+
+## 功能使用
+
+1. **登录**
+   - 输入您的用户名（2-20个字符）
+   - 选择一个默认头像或上传自定义头像
+   - 点击"进入聊天室"
+
+2. **聊天**
+   - 在文本框中输入消息
+   - 按回车键或点击"发送"按钮发送消息
+   - 消息会实时显示给所有在线用户
+
+3. **重置聊天室**
+   - 点击侧边栏底部的"重置聊天室"按钮
+   - 当前的聊天记录将保存到日志文件中
+   - 聊天记录将被清空
+
+4. **查看聊天记录**
+   - 聊天记录保存在服务器的 `logs/[年份]/[月份]/[日期].md` 文件中
+   - 每次重置聊天室，当前聊天记录会自动保存
+
+## 注意事项
+
+1. 服务器必须保持运行，才能让用户进行聊天。
+2. 用户只能手动删除日志文件，系统不会自动删除。
+3. 所有用户的聊天内容没有限制，请确保在适当的环境中使用。
+4. 用户名在聊天室中是唯一的，不能重复。
+5. 头像图片大小限制为2MB，支持JPG和PNG格式。
