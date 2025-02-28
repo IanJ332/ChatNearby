@@ -90,6 +90,14 @@ local-chat-room/
 - 版本号：1.0
 - 更新日期：2025-02-27
 
+### 许可证
+本项目采用双重许可模式，您可以选择使用以下任一许可证：
+
+- [MIT 许可证](LICENSE-MIT)
+- [Apache 许可证 2.0](LICENSE-APACHE)
+
+选择使用本软件即表示您同意遵守所选许可证的条款。
+
 ---
 
 ## Local Network Chat Room
@@ -179,3 +187,11 @@ local-chat-room/
 ### Version Information
 - Version: 1.0
 - Update Date: 2025-02-27
+
+### License
+This project is dual-licensed, you may choose either of the following licenses:
+
+- [MIT License](LICENSE-MIT)
+- [Apache License 2.0](LICENSE-APACHE)
+
+Using this software indicates your agreement with the terms of your chosen license.
