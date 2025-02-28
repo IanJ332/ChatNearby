@@ -29,9 +29,10 @@ let rooms = {
 };
 
 // 中间件设置
-app.use(express.static('frontend')); // 静态文件
+app.use(express.static(path.join(__dirname, '../frontend'))); // 静态文件
 app.use(express.json()); // 解析JSON
-app.use('/uploads', express.static('uploads')); // 服务上传的文件
+app.use('/uploads', express.static(path.join(__dirname, '../uploads'))); // 服务上传的文件
+app.use('/images', express.static(path.join(__dirname, '../frontend/images'))); // 服务图片文件
 
 // 保存聊天记录到日志
 const saveRoomLogsToFile = (roomId) => {
