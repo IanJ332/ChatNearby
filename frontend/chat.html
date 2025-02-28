@@ -399,8 +399,22 @@
                     </div>
                 `;
             } else {
+                // 处理头像路径
+                let avatarPath = message.avatar;
+                
+                // 如果路径包含旧的/images/avatars路径，更新为新路径
+                if (avatarPath && avatarPath.includes('/images/avatars/')) {
+                    avatarPath = avatarPath.replace('/images/avatars/', '/avatars/');
+                }
+                
+                // 确保路径有效，如果无效，使用默认头像
+                if (!avatarPath || !avatarPath.includes('/avatars/')) {
+                    const avatarName = avatarPath ? avatarPath.split('/').pop() : 'avatar1.png';
+                    avatarPath = `/avatars/${avatarName}`;
+                }
+                
                 messageEl.innerHTML = `
-                    <img class="message-avatar" src="${message.avatar || '/images/avatars/avatar1.png'}" alt="${message.username}">
+                    <img class="message-avatar" src="${avatarPath}" alt="${message.username}">
                     <div class="message-content">
                         <div class="message-header">
                             <span class="message-username">${message.username}</span>
@@ -462,10 +476,24 @@
         function updateUsersList(users) {
             usersList.innerHTML = '';
             users.forEach(user => {
+                // 处理头像路径
+                let avatarPath = user.avatar;
+                
+                // 如果路径包含旧的/images/avatars路径，更新为新路径
+                if (avatarPath && avatarPath.includes('/images/avatars/')) {
+                    avatarPath = avatarPath.replace('/images/avatars/', '/avatars/');
+                }
+                
+                // 确保路径有效，如果无效，使用默认头像
+                if (!avatarPath || !avatarPath.includes('/avatars/')) {
+                    const avatarName = avatarPath ? avatarPath.split('/').pop() : 'avatar1.png';
+                    avatarPath = `/avatars/${avatarName}`;
+                }
+                
                 const userEl = document.createElement('div');
                 userEl.classList.add('user-item');
                 userEl.innerHTML = `
-                    <img class="user-avatar" src="${user.avatar || '/images/avatars/avatar1.png'}" alt="${user.username}">
+                    <img class="user-avatar" src="${avatarPath}" alt="${user.username}">
                     <span>${user.username}</span>
                 `;
                 usersList.appendChild(userEl);
@@ -483,11 +511,30 @@
             }
         }
         
+        // 修正用户头像路径
+        let correctedAvatar = userAvatar;
+        
+        // 如果路径包含旧的/images/avatars路径，更新为新路径
+        if (correctedAvatar && correctedAvatar.includes('/images/avatars/')) {
+            correctedAvatar = correctedAvatar.replace('/images/avatars/', '/avatars/');
+            localStorage.setItem('chat_avatar', correctedAvatar);
+        }
+        
+        // 确保路径有效，如果无效，使用默认头像
+        if (!correctedAvatar || !correctedAvatar.includes('/avatars/')) {
+            // 如果是自定义上传的头像（data:image URL），保持不变
+            if (!correctedAvatar || !correctedAvatar.startsWith('data:')) {
+                const avatarName = correctedAvatar ? correctedAvatar.split('/').pop() : 'avatar1.png';
+                correctedAvatar = `/avatars/${avatarName}`;
+                localStorage.setItem('chat_avatar', correctedAvatar);
+            }
+        }
+        
         // 加入聊天室
         socket.emit('join room', {
             roomId: 'main',
             username,
-            avatar: userAvatar
+            avatar: correctedAvatar
         }, function(response) {
             if (!response.success) {
                 alert(response.message);
@@ -531,7 +578,7 @@
             }
             
             // 更新用户列表
-            socket.emit('join room', { roomId: 'main', username, avatar: userAvatar }, response => {
+            socket.emit('join room', { roomId: 'main', username, avatar: correctedAvatar }, response => {
                 if (response.success) {
                     updateUsersList(Object.values(response.users));
                 }
@@ -548,7 +595,7 @@
             }
             
             // 更新用户列表
-            socket.emit('join room', { roomId: 'main', username, avatar: userAvatar }, response => {
+            socket.emit('join room', { roomId: 'main', username, avatar: correctedAvatar }, response => {
                 if (response.success) {
                     updateUsersList(Object.values(response.users));
                 }

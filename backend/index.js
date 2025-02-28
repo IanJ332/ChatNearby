@@ -3,14 +3,36 @@ const http = require('http');
 const socketIo = require('socket.io');
 const fs = require('fs');
 const path = require('path');
+const os = require('os'); // 用于获取网络接口信息
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 const PORT = process.env.PORT || 3000;
 
+// 函数：获取本地IP地址
+function getLocalIpAddress() {
+  const interfaces = os.networkInterfaces();
+  let ipAddress = 'localhost';
+  
+  // 遍历所有网络接口
+  for (const ifaceName in interfaces) {
+    const iface = interfaces[ifaceName];
+    // 跳过内部回环接口和非IPv4接口
+    for (const alias of iface) {
+      if (alias.family === 'IPv4' && !alias.internal) {
+        // 返回第一个找到的非内部IPv4地址
+        ipAddress = alias.address;
+        return ipAddress;
+      }
+    }
+  }
+  
+  return ipAddress;
+}
+
 // 创建必要的目录
 const createDirectories = () => {
-  const dirs = ['logs', 'uploads/avatars', 'temp'];
+  const dirs = ['logs', 'temp'];
   dirs.forEach(dir => {
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
@@ -32,7 +54,11 @@ let rooms = {
 app.use(express.static(path.join(__dirname, '../frontend'))); // 静态文件
 app.use(express.json()); // 解析JSON
 app.use('/uploads', express.static(path.join(__dirname, '../uploads'))); // 服务上传的文件
-app.use('/images', express.static(path.join(__dirname, '../frontend/images'))); // 服务图片文件
+
+// 设置头像目录的路径（使用相对路径）
+app.use('/avatars', express.static(path.join(__dirname, '../avatars')));
+// 为了兼容性，也映射旧路径到新的头像目录
+app.use('/images/avatars', express.static(path.join(__dirname, '../avatars')));
 
 // 保存聊天记录到日志
 const saveRoomLogsToFile = (roomId) => {
@@ -206,8 +232,21 @@ io.on('connection', (socket) => {
   });
 });
 
+// 检查头像目录是否存在
+const avatarPath = path.join(__dirname, '../avatars');
+if (!fs.existsSync(avatarPath)) {
+  console.warn(`注意: 头像目录不存在: ${avatarPath}，将自动创建此目录`);
+  fs.mkdirSync(avatarPath, { recursive: true });
+  console.log(`已创建头像目录: ${avatarPath}`);
+} else {
+  console.log(`头像目录存在: ${avatarPath}`);
+}
+
+// 获取本地IP地址
+const localIpAddress = getLocalIpAddress();
+
 // 启动服务器
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`服务器运行在 http://localhost:${PORT}`);
-  console.log(`局域网用户可以通过您的IP地址访问: http://YOUR_IP_ADDRESS:${PORT}`);
+  console.log(`局域网用户可以通过您的IP地址访问: http://${localIpAddress}:${PORT}`);
 });
