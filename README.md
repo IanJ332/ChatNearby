@@ -1,81 +1,181 @@
-# 局域网聊天室应用安装和使用说明
+# 局域网聊天室 / Local Network Chat Room
 
-## 环境要求
-- Node.js (推荐 v14.x 或更高版本)
-- npm (Node 包管理器)
+[English](#local-network-chat-room) | [中文](#局域网聊天室-1)
 
-## 安装步骤
+## 局域网聊天室
 
-1. **下载项目文件**
-   将所有项目文件下载到您的计算机上，保持目录结构不变。
+### 项目概述
+局域网聊天室是一个基于Web的实时通信平台，允许局域网内的用户通过浏览器进行文字聊天。用户可以设置自己的名称和头像，所有聊天记录会在重置后保存到日志文件中。应用支持中英文界面，并针对移动设备和桌面设备进行了优化。
 
-2. **安装依赖**
+### 主要功能
+1. **实时聊天**：
+   - 用户可以实时发送和接收消息
+   - 支持系统消息（用户加入/离开通知）
+   - 显示在线用户列表和数量
+
+2. **用户标识**：
+   - 用户可以设置自己的名称（2-20个字符）
+   - 用户可以选择默认头像或上传自定义头像
+   - 用户名查重功能，避免同名用户
+
+3. **语言支持**：
+   - 支持中英文界面切换
+   - 用户语言偏好会被保存
+
+4. **聊天记录**：
+   - 重置聊天室功能，将聊天记录保存到日志文件
+   - 日志按年/月/日组织存储
+
+5. **设备兼容**：
+   - 响应式设计，兼容桌面和移动设备
+   - 针对触屏设备进行了优化
+
+### 技术栈
+- **前端**：HTML, CSS, JavaScript
+- **后端**：Node.js, Express, Socket.IO
+- **文件系统**：Node.js fs模块用于日志存储
+
+### 安装步骤
+
+1. **克隆仓库**：
+   ```bash
+   git clone <repository-url>
+   cd local-chat-room
+   ```
+
+2. **安装依赖**：
    ```bash
    cd backend
    npm install
    ```
 
-3. **准备默认头像**
-   在 `frontend/images/avatars/` 目录下放置6个默认头像图片，命名为 `avatar1.png` 到 `avatar6.png`。
-   
-   您可以使用任何头像图片，但确保它们是正方形的，并且文件名与代码中的一致。
+3. **准备默认头像**：
+   在 `frontend/images/avatars/` 目录下放置默认头像图片，命名为 `avatar1.png` 到 `avatar6.png`
 
-4. **启动服务器**
+4. **启动服务器**：
    ```bash
    npm start
    ```
-   
-   如果要在开发模式下运行（文件更改时自动重启服务器）：
+
+5. **访问聊天室**：
+   - 本机访问：http://localhost:3000
+   - 局域网内其他设备访问：http://[您的IP地址]:3000
+
+### 使用说明
+1. 在登录页面设置用户名和选择/上传头像
+2. 选择界面语言（中文或英文）
+3. 进入聊天室后可以看到在线用户列表和聊天记录
+4. 在底部输入框中输入消息并发送
+5. 管理员可以点击"重置聊天室"按钮清空当前聊天记录
+
+### 目录结构
+```
+local-chat-room/
+├── backend/           # 后端代码
+│   ├── index.js       # 主服务器代码
+│   └── package.json   # 依赖配置
+├── frontend/          # 前端代码
+│   ├── index.html     # 登录页面
+│   ├── chat.html      # 聊天室页面
+│   ├── images/        # 图片资源
+│   │   └── avatars/   # 头像图片
+│   └── styles/        # 样式文件
+│       └── style.css  # 主样式表
+├── logs/              # 聊天记录日志（自动创建）
+├── uploads/           # 用户上传的头像（自动创建）
+└── temp/              # 临时文件（自动创建）
+```
+
+### 版本信息
+- 版本号：1.0
+- 更新日期：2025-02-27
+
+---
+
+## Local Network Chat Room
+
+### Project Overview
+The Local Network Chat Room is a web-based real-time communication platform that allows users on a local network to chat through their browsers. Users can set their own names and avatars, and all chat records are saved to log files when reset. The application supports both Chinese and English interfaces and is optimized for both mobile and desktop devices.
+
+### Main Features
+1. **Real-time Chat**:
+   - Users can send and receive messages in real-time
+   - Support for system messages (user join/leave notifications)
+   - Display of online user list and count
+
+2. **User Identity**:
+   - Users can set their own names (2-20 characters)
+   - Users can choose default avatars or upload custom ones
+   - Username uniqueness check to avoid duplicate names
+
+3. **Language Support**:
+   - Supports switching between Chinese and English interfaces
+   - User language preferences are saved
+
+4. **Chat History**:
+   - Reset chat room feature that saves chat history to log files
+   - Logs organized by year/month/day
+
+5. **Device Compatibility**:
+   - Responsive design compatible with desktop and mobile devices
+   - Optimized for touch screen devices
+
+### Technology Stack
+- **Frontend**: HTML, CSS, JavaScript
+- **Backend**: Node.js, Express, Socket.IO
+- **File System**: Node.js fs module for log storage
+
+### Installation Steps
+
+1. **Clone Repository**:
    ```bash
-   npm run dev
+   git clone <repository-url>
+   cd local-chat-room
    ```
 
-5. **访问聊天室**
-   - 在运行服务器的计算机上打开浏览器，访问 `http://localhost:3000`
-   - 局域网内的其他用户可以通过您计算机的 IP 地址访问，例如 `http://192.168.0.123:3000`
+2. **Install Dependencies**:
+   ```bash
+   cd backend
+   npm install
+   ```
 
-## 查找您的局域网 IP 地址
+3. **Prepare Default Avatars**:
+   Place default avatar images in the `frontend/images/avatars/` directory, named from `avatar1.png` to `avatar6.png`
 
-### Windows
-1. 按下 `Win + R`，输入 `cmd` 打开命令提示符
-2. 输入 `ipconfig` 并按回车
-3. 查找 "IPv4 地址" 字段，这就是您的局域网 IP
+4. **Start Server**:
+   ```bash
+   npm start
+   ```
 
-### macOS
-1. 打开系统偏好设置 > 网络
-2. 选择活动的网络连接（如 Wi-Fi 或以太网）
-3. 您的 IP 地址将显示在右侧面板中
+5. **Access Chat Room**:
+   - Local access: http://localhost:3000
+   - Other devices on local network: http://[Your-IP-Address]:3000
 
-### Linux
-1. 打开终端
-2. 输入 `hostname -I` 或 `ip addr` 命令
-3. 查找您的局域网 IP 地址
+### Usage Instructions
+1. Set username and select/upload avatar on the login page
+2. Choose interface language (Chinese or English)
+3. After entering the chat room, you can see the online user list and chat history
+4. Enter messages in the bottom input box and send
+5. Administrators can click the "Reset Chat Room" button to clear current chat history
 
-## 功能使用
+### Directory Structure
+```
+local-chat-room/
+├── backend/           # Backend code
+│   ├── index.js       # Main server code
+│   └── package.json   # Dependencies configuration
+├── frontend/          # Frontend code
+│   ├── index.html     # Login page
+│   ├── chat.html      # Chat room page
+│   ├── images/        # Image resources
+│   │   └── avatars/   # Avatar images
+│   └── styles/        # Style files
+│       └── style.css  # Main stylesheet
+├── logs/              # Chat history logs (auto-created)
+├── uploads/           # User uploaded avatars (auto-created)
+└── temp/              # Temporary files (auto-created)
+```
 
-1. **登录**
-   - 输入您的用户名（2-20个字符）
-   - 选择一个默认头像或上传自定义头像
-   - 点击"进入聊天室"
-
-2. **聊天**
-   - 在文本框中输入消息
-   - 按回车键或点击"发送"按钮发送消息
-   - 消息会实时显示给所有在线用户
-
-3. **重置聊天室**
-   - 点击侧边栏底部的"重置聊天室"按钮
-   - 当前的聊天记录将保存到日志文件中
-   - 聊天记录将被清空
-
-4. **查看聊天记录**
-   - 聊天记录保存在服务器的 `logs/[年份]/[月份]/[日期].md` 文件中
-   - 每次重置聊天室，当前聊天记录会自动保存
-
-## 注意事项
-
-1. 服务器必须保持运行，才能让用户进行聊天。
-2. 用户只能手动删除日志文件，系统不会自动删除。
-3. 所有用户的聊天内容没有限制，请确保在适当的环境中使用。
-4. 用户名在聊天室中是唯一的，不能重复。
-5. 头像图片大小限制为2MB，支持JPG和PNG格式。
+### Version Information
+- Version: 1.0
+- Update Date: 2025-02-27

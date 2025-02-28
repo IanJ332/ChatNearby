@@ -2,8 +2,8 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>局域网聊天室</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>聊天室 | Chat Room</title>
     <style>
         * {
             margin: 0;
@@ -17,6 +17,32 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
+            touch-action: manipulation;
+            overflow: hidden;
+        }
+        
+        /* 语言选择器样式 */
+        .language-selector {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        
+        .language-btn {
+            padding: 3px 8px;
+            background-color: #34495e;
+            border: 1px solid #2c3e50;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            color: #ddd;
+        }
+        
+        .language-btn.active {
+            background-color: #3498db;
+            color: white;
+            border-color: #2980b9;
         }
         
         .chat-container {
@@ -213,11 +239,68 @@
             
             .sidebar {
                 width: 100%;
-                max-height: 200px;
+                max-height: 150px;
+                flex-shrink: 0;
+            }
+            
+            .users-list {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 5px;
+                max-height: 80px;
+                overflow-y: auto;
+            }
+            
+            .user-item {
+                flex-basis: auto;
+                margin-bottom: 0;
             }
             
             .message-content {
                 max-width: 85%;
+            }
+            
+            .message-input {
+                padding: 10px;
+            }
+            
+            .message-input textarea {
+                font-size: 16px; /* 防止iOS缩放 */
+            }
+            
+            /* 确保聊天界面在移动设备上有更好的空间利用 */
+            .main-content {
+                flex: 1;
+                min-height: 0;
+                display: flex;
+                flex-direction: column;
+            }
+            
+            .chat-messages {
+                flex: 1;
+                min-height: 0;
+            }
+            
+            /* 小屏幕上减小头像尺寸 */
+            .message-avatar {
+                width: 30px;
+                height: 30px;
+            }
+        }
+        
+        /* 适应更小的手机屏幕 */
+        @media (max-width: 480px) {
+            .room-info h1 {
+                font-size: 1rem;
+            }
+            
+            .message-text {
+                font-size: 14px;
+            }
+            
+            .admin-controls button {
+                padding: 5px;
+                font-size: 12px;
             }
         }
     </style>
@@ -226,14 +309,18 @@
     <div class="chat-container">
         <div class="sidebar">
             <div class="room-info">
-                <h1>局域网聊天室</h1>
-                <p id="online-count">在线人数: 0</p>
+                <h1 data-lang-key="title">局域网聊天室</h1>
+                <p id="online-count" data-lang-key="online_count">在线人数: 0</p>
+                <div class="language-selector">
+                    <button type="button" class="language-btn active" data-lang="zh">中</button>
+                    <button type="button" class="language-btn" data-lang="en">EN</button>
+                </div>
             </div>
             <div class="users-list" id="users-list">
                 <!-- 用户列表会在这里动态生成 -->
             </div>
             <div class="admin-controls">
-                <button id="reset-chat">重置聊天室</button>
+                <button id="reset-chat" data-lang-key="reset_chat">重置聊天室</button>
             </div>
         </div>
         
@@ -243,8 +330,8 @@
             </div>
             
             <div class="message-input">
-                <textarea id="message-input" placeholder="输入消息..." rows="2"></textarea>
-                <button id="send-button">发送</button>
+                <textarea id="message-input" data-lang-key="message_placeholder" placeholder="输入消息..." rows="2"></textarea>
+                <button id="send-button" data-lang-key="send">发送</button>
             </div>
         </div>
     </div>
@@ -254,6 +341,7 @@
         // 从本地存储获取用户信息
         const username = localStorage.getItem('chat_username');
         const userAvatar = localStorage.getItem('chat_avatar');
+        let currentLanguage = localStorage.getItem('chat_language') || 'zh';
         
         // 如果没有用户信息，重定向回登录页面
         if (!username || !userAvatar) {
@@ -267,6 +355,26 @@
         const sendButton = document.getElementById('send-button');
         const onlineCountEl = document.getElementById('online-count');
         const resetButton = document.getElementById('reset-chat');
+        
+        // 语言翻译
+        const translations = {
+            zh: {
+                title: "局域网聊天室",
+                online_count: "在线人数: ",
+                reset_chat: "重置聊天室",
+                message_placeholder: "输入消息...",
+                send: "发送",
+                confirm_reset: "确定要重置聊天室吗？所有聊天记录将被保存到日志文件。"
+            },
+            en: {
+                title: "Local Network Chat",
+                online_count: "Online: ",
+                reset_chat: "Reset Chat",
+                message_placeholder: "Type a message...",
+                send: "Send",
+                confirm_reset: "Are you sure you want to reset the chat room? All chat history will be saved to log files."
+            }
+        };
         
         // 格式化时间
         function formatTime(timestamp) {
@@ -306,6 +414,50 @@
             return messageEl;
         }
         
+        // 设置语言
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            
+            // 保存语言选择到本地存储
+            localStorage.setItem('chat_language', lang);
+            
+            // 更新界面文本
+            document.querySelectorAll('[data-lang-key]').forEach(el => {
+                const key = el.getAttribute('data-lang-key');
+                if (translations[lang][key]) {
+                    if (el.tagName === 'TEXTAREA' && el.hasAttribute('placeholder')) {
+                        el.placeholder = translations[lang][key];
+                    } else if (el.id === 'online-count') {
+                        // 特殊处理在线人数
+                        const usersCount = parseInt(el.textContent.replace(/[^0-9]/g, ''));
+                        el.textContent = `${translations[lang].online_count}${usersCount}`;
+                    } else {
+                        el.textContent = translations[lang][key];
+                    }
+                }
+            });
+            
+            // 更新语言按钮状态
+            document.querySelectorAll('.language-btn').forEach(btn => {
+                if (btn.getAttribute('data-lang') === lang) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+        
+        // 初始化语言设置
+        setLanguage(currentLanguage);
+        
+        // 处理语言选择
+        document.querySelectorAll('.language-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const lang = this.getAttribute('data-lang');
+                setLanguage(lang);
+            });
+        });
+        
         // 更新用户列表
         function updateUsersList(users) {
             usersList.innerHTML = '';
@@ -319,7 +471,7 @@
                 usersList.appendChild(userEl);
             });
             
-            onlineCountEl.textContent = `在线人数: ${users.length}`;
+            onlineCountEl.textContent = `${translations[currentLanguage].online_count}${users.length}`;
         }
         
         // 发送消息
@@ -426,7 +578,7 @@
         
         // 重置聊天室按钮点击事件
         resetButton.addEventListener('click', function() {
-            if (confirm('确定要重置聊天室吗？所有聊天记录将被保存到日志文件。')) {
+            if (confirm(translations[currentLanguage].confirm_reset)) {
                 socket.emit('reset room', 'main');
             }
         });
