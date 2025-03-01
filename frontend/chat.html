@@ -2,7 +2,9 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>聊天室 | Chat Room</title>
     <style>
         * {
@@ -629,6 +631,156 @@
                 socket.emit('reset room', 'main');
             }
         });
+        // Add these functions to the chat.html JavaScript section
+
+    // Handle mobile viewport adjustments
+    function handleMobileViewport() {
+        // Prevent viewport issues when keyboard appears
+        const viewportHeight = window.innerHeight;
+        document.documentElement.style.setProperty('--vh', `${viewportHeight * 0.01}px`);
+        
+        // Apply appropriate heights using the custom property
+        document.querySelector('.chat-container').style.height = 'calc(var(--vh, 1vh) * 100)';
+    }
+
+    // Call once on load and when orientation changes
+    window.addEventListener('resize', handleMobileViewport);
+    window.addEventListener('orientationchange', handleMobileViewport);
+    handleMobileViewport();
+
+    // Improve mobile text input handling
+    const textArea = document.getElementById('message-input');
+
+    // Auto resize text area
+    textArea.addEventListener('input', function() {
+        // Reset height to allow proper calculation
+        this.style.height = 'auto';
+        
+        // Set new height based on content
+        const newHeight = Math.min(this.scrollHeight, 100);
+        this.style.height = newHeight + 'px';
+    });
+
+    // Fix message render issue for join/leave system messages
+    function createMessageElement(message, isSelf = false) {
+        const messageEl = document.createElement('div');
+        messageEl.classList.add('message');
+        
+        if (isSelf) {
+            messageEl.classList.add('self');
+        }
+        
+        if (message.system) {
+            messageEl.classList.add('system');
+            messageEl.innerHTML = `
+                <div class="message-content">
+                    <div class="message-text">${message.text}</div>
+                </div>
+            `;
+            
+            // Add special classes for join/leave messages
+            if (message.text.includes('加入')) {
+                messageEl.classList.add('join-message');
+            } else if (message.text.includes('离开')) {
+                messageEl.classList.add('leave-message');
+            }
+        } else {
+            // Process avatar (unchanged from your original code)
+            let avatarPath = message.avatar;
+            
+            if (avatarPath && avatarPath.includes('/images/avatars/')) {
+                avatarPath = avatarPath.replace('/images/avatars/', '/avatars/');
+            }
+            
+            if (!avatarPath || !avatarPath.includes('/avatars/')) {
+                const avatarName = avatarPath ? avatarPath.split('/').pop() : 'avatar1.png';
+                avatarPath = `/avatars/${avatarName}`;
+            }
+            
+            messageEl.innerHTML = `
+                <img class="message-avatar" src="${avatarPath}" alt="${message.username}">
+                <div class="message-content">
+                    <div class="message-header">
+                        <span class="message-username">${message.username}</span>
+                        <span class="message-time">${formatTime(message.timestamp)}</span>
+                    </div>
+                    <div class="message-text">${message.text}</div>
+                </div>
+            `;
+        }
+        
+        return messageEl;
+    }
+
+    // Improve mobile scrolling
+    function scrollToBottom(smooth = true) {
+        const messagesContainer = document.getElementById('chat-messages');
+        if (smooth) {
+            messagesContainer.scrollTo({
+                top: messagesContainer.scrollHeight,
+                behavior: 'smooth'
+            });
+        } else {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+    }
+
+    // Prevent iOS from trying to zoom in on inputs
+    document.addEventListener('gesturestart', function(e) {
+        e.preventDefault();
+    });
+
+    // Fix double tap zoom on mobile
+    let lastTapTime = 0;
+    document.addEventListener('touchend', function(e) {
+        const currentTime = new Date().getTime();
+        const tapLength = currentTime - lastTapTime;
+        if (tapLength < 500 && tapLength > 0) {
+            e.preventDefault();
+        }
+        lastTapTime = currentTime;
+    });
+
+    // Call this when new messages are added
+    socket.on('chat message', function(message) {
+        const isSelf = message.username === username;
+        const messageEl = createMessageElement(message, isSelf);
+        messagesList.appendChild(messageEl);
+        
+        // Scroll to bottom with improved handling
+        scrollToBottom();
+    });
+
+    // Apply the same for system messages
+    socket.on('user joined', function(data) {
+        if (data.message) {
+            const messageEl = createMessageElement(data.message, false);
+            messagesList.appendChild(messageEl);
+            scrollToBottom();
+        }
+        
+        // Update user list (code unchanged)
+    });
+
+    socket.on('user left', function(data) {
+        if (data.message) {
+            const messageEl = createMessageElement(data.message, false);
+            messagesList.appendChild(messageEl);
+            scrollToBottom();
+        }
+        
+        // Update user list (code unchanged)
+    });
+
+    // Make sure keyboard doesn't break layout
+    window.addEventListener('resize', function() {
+        // If keyboard is visible (window height significantly reduced)
+        if (window.innerHeight < window.outerHeight * 0.75) {
+            document.body.classList.add('keyboard-open');
+        } else {
+            document.body.classList.remove('keyboard-open');
+        }
+    });
     </script>
 </body>
 </html>

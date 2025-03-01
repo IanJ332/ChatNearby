@@ -1,6 +1,7 @@
-# 局域网聊天室 / Local Network Chat Room
+# Local Network Chat Room / 局域网聊天室
 
-[English](#local-network-chat-room) | [中文](#局域网聊天室-1)
+[English](#local-network-chat-room) | [中文](#局域网聊天室)
+
 ## Local Network Chat Room
 
 ### Project Overview
@@ -113,6 +114,7 @@ Using this software indicates your agreement with the terms of your chosen licen
 
 ---
 
+<a name="局域网聊天室"></a>
 ## 局域网聊天室
 
 ### 项目概述
@@ -214,7 +216,6 @@ local-chat-room/
 ```
 
 您可以直接复制粘贴此URL与朋友分享。
-
 
 ### 许可证
 本项目采用双重许可模式，您可以选择使用以下任一许可证：
