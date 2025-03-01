@@ -1,37 +1,17 @@
+// backend/index.js
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const fs = require('fs');
 const path = require('path');
-const os = require('os'); // 用于获取网络接口信息
+const os = require('os');
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 const PORT = process.env.PORT || 3000;
 
-// 函数：获取本地IP地址
-function getLocalIpAddress() {
-  const interfaces = os.networkInterfaces();
-  let ipAddress = 'localhost';
-  
-  // 遍历所有网络接口
-  for (const ifaceName in interfaces) {
-    const iface = interfaces[ifaceName];
-    // 跳过内部回环接口和非IPv4接口
-    for (const alias of iface) {
-      if (alias.family === 'IPv4' && !alias.internal) {
-        // 返回第一个找到的非内部IPv4地址
-        ipAddress = alias.address;
-        return ipAddress;
-      }
-    }
-  }
-  
-  return ipAddress;
-}
-
-// 系统消息的多语言支持
-const systemMessages = {
+// Load language translations
+const translations = {
   zh: {
     userJoined: username => `${username} 加入了聊天室`,
     userLeft: username => `${username} 离开了聊天室`,
@@ -44,9 +24,27 @@ const systemMessages = {
   }
 };
 
-// 创建必要的目录
+// Function: Get local IP address
+function getLocalIpAddress() {
+  const interfaces = os.networkInterfaces();
+  let ipAddress = 'localhost';
+  
+  for (const ifaceName in interfaces) {
+    const iface = interfaces[ifaceName];
+    for (const alias of iface) {
+      if (alias.family === 'IPv4' && !alias.internal) {
+        ipAddress = alias.address;
+        return ipAddress;
+      }
+    }
+  }
+  
+  return ipAddress;
+}
+
+// Create necessary directories
 const createDirectories = () => {
-  const dirs = ['logs', 'temp'];
+  const dirs = ['logs', 'temp', 'avatars'];
   dirs.forEach(dir => {
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
@@ -56,25 +54,50 @@ const createDirectories = () => {
 
 createDirectories();
 
-// 存储活跃用户和房间信息
+// Store active users and room information
 let rooms = {
   'main': {
-    users: {}, // 保存所有用户信息 {socketId: {username, avatar}}
-    messages: [] // 保存房间的所有消息
+    users: {}, // {socketId: {username, avatar, language}}
+    messages: []
   }
 };
 
-// 中间件设置
-app.use(express.static(path.join(__dirname, '../frontend'))); // 静态文件
-app.use(express.json()); // 解析JSON
-app.use('/uploads', express.static(path.join(__dirname, '../uploads'))); // 服务上传的文件
+// Banned IPs storage
+const bannedIPs = new Map();
 
-// 设置头像目录的路径（使用相对路径）
+// Admin users storage
+const adminUsers = new Set(['admin']); // Default admin username
+
+// Middleware setup
+app.use(express.static(path.join(__dirname, '../frontend')));
+app.use(express.json());
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 app.use('/avatars', express.static(path.join(__dirname, '../avatars')));
-// 为了兼容性，也映射旧路径到新的头像目录
-app.use('/images/avatars', express.static(path.join(__dirname, '../avatars')));
+app.use('/images/avatars', express.static(path.join(__dirname, '../avatars'))); // For compatibility
 
-// 保存聊天记录到日志
+// Middleware to check if IP is banned
+const checkBanned = (socket, next) => {
+  const ip = socket.handshake.address;
+  
+  if (bannedIPs.has(ip)) {
+    const banInfo = bannedIPs.get(ip);
+    
+    // Check if ban has expired
+    if (banInfo.until > Date.now()) {
+      return next(new Error('BANNED'));
+    } else {
+      // Ban expired, remove from map
+      bannedIPs.delete(ip);
+    }
+  }
+  
+  next();
+};
+
+// Apply banned IP middleware
+io.use(checkBanned);
+
+// Save chat logs to file
 const saveRoomLogsToFile = (roomId) => {
   if (!rooms[roomId] || !rooms[roomId].messages.length) return;
   
@@ -88,10 +111,13 @@ const saveRoomLogsToFile = (roomId) => {
     fs.mkdirSync(logDir, { recursive: true });
   }
   
-  const logFile = path.join(logDir, `${day}.md`);
+  const logFile = path.join(logDir, `${day}_${roomId}.md`);
   const logContent = `# Chat Log - Room: ${roomId} - ${year}-${month}-${day}\n\n` + 
     rooms[roomId].messages.map(msg => {
       const time = new Date(msg.timestamp).toLocaleTimeString();
+      if (msg.system) {
+        return `**${time} - System**: ${msg.text}`;
+      }
       return `**${time} - ${msg.username}**: ${msg.text}`;
     }).join('\n\n');
   
@@ -99,41 +125,71 @@ const saveRoomLogsToFile = (roomId) => {
   console.log(`Chat logs saved to ${logFile}`);
 };
 
-// 检查用户名是否已存在
+// Check if username is taken
 const isUsernameTaken = (roomId, username) => {
   if (!rooms[roomId]) return false;
   return Object.values(rooms[roomId].users).some(user => user.username === username);
 };
 
-// WebSocket连接处理
+// Check if user is admin
+const isAdmin = (username) => {
+  return adminUsers.has(username);
+};
+
+// WebSocket connection handling
 io.on('connection', (socket) => {
-  console.log(`New connection: ${socket.id}`);
+  console.log(`New connection: ${socket.id} from IP: ${socket.handshake.address}`);
   
-  // 检查用户名是否可用
+  // Check if username is available
   socket.on('check username', (data, callback) => {
     const { roomId, username } = data;
     const room = roomId || 'main';
     
-    // 验证用户名格式(2-20个字符)
+    // Validate username format (2-20 characters)
     const usernameRegex = /^[A-Za-z0-9\u4e00-\u9fa5_-]{2,20}$/;
     if (!usernameRegex.test(username)) {
-      return callback({ valid: false, message: '用户名格式无效，请使用2-20个字符(字母、数字、中文、下划线或连字符)' });
+      return callback({
+        valid: false,
+        message: socket.language === 'zh' 
+          ? '用户名格式无效，请使用2-20个字符(字母、数字、中文、下划线或连字符)'
+          : 'Invalid username format. Please use 2-20 characters (letters, numbers, Chinese characters, underscores or hyphens)'
+      });
     }
     
-    // 检查用户名是否已被使用
+    // Check if username is taken
     if (isUsernameTaken(room, username)) {
-      return callback({ valid: false, message: '用户名已被使用，请选择其他用户名' });
+      return callback({
+        valid: false,
+        message: socket.language === 'zh'
+          ? '用户名已被使用，请选择其他用户名'
+          : 'Username is already taken, please choose another one'
+      });
     }
     
     callback({ valid: true });
   });
   
+  // Handle language change
+  socket.on('language change', (data) => {
+    const { language } = data;
+    socket.language = language || 'zh';
+    
+    // If user is in a room, update their language preference
+    if (socket.roomId && rooms[socket.roomId] && rooms[socket.roomId].users[socket.id]) {
+      rooms[socket.roomId].users[socket.id].language = socket.language;
+    }
+  });
+  
+  // Join room
   socket.on('join room', (data, callback) => {
-    const { roomId, username, avatar, language } = data; // 添加language参数
-    const userLanguage = language || 'en'; // 默认使用英文
+    const { roomId, username, avatar, language } = data;
+    const userLanguage = language || 'zh';
     const room = roomId || 'main';
     
-    // 确保房间存在
+    // Set language for this socket
+    socket.language = userLanguage;
+    
+    // Ensure room exists
     if (!rooms[room]) {
       rooms[room] = {
         users: {},
@@ -141,43 +197,60 @@ io.on('connection', (socket) => {
       };
     }
     
-    // 检查用户名是否已被使用
-    if (isUsernameTaken(room, username)) {
-      return callback({ success: false, message: '用户名已被使用，请选择其他用户名' });
+    // Check if username is taken (for new users)
+    if (!socket.roomId && isUsernameTaken(room, username)) {
+      return callback({
+        success: false,
+        message: userLanguage === 'zh'
+          ? '用户名已被使用，请选择其他用户名'
+          : 'Username is already taken, please choose another one'
+      });
     }
     
-    // 将用户加入房间
+    // If user is rejoining with a new socket, remove old socket entry
+    if (socket.roomId) {
+      Object.entries(rooms[room].users).forEach(([sid, user]) => {
+        if (user.username === username && sid !== socket.id) {
+          delete rooms[room].users[sid];
+        }
+      });
+    }
+    
+    // Join room
     socket.join(room);
-    socket.roomId = room; // 保存用户当前所在房间ID
-    socket.language = userLanguage; // 保存用户的语言偏好
+    socket.roomId = room;
     rooms[room].users[socket.id] = { username, avatar, language: userLanguage };
     
-    // 发送欢迎消息 - 使用用户的语言偏好
-    const joinMessage = {
-      username: 'System',
-      text: systemMessages[userLanguage].userJoined(username),
-      timestamp: Date.now(),
-      system: true
-    };
+    // Send welcome message if it's a new user
+    if (!socket.username) {
+      socket.username = username;
+      
+      const joinMessage = {
+        username: 'System',
+        text: translations[userLanguage].userJoined(username),
+        timestamp: Date.now(),
+        system: true
+      };
+      
+      rooms[room].messages.push(joinMessage);
+      
+      // Broadcast to others
+      socket.to(room).emit('user joined', {
+        username,
+        avatar,
+        message: joinMessage
+      });
+    }
     
-    rooms[room].messages.push(joinMessage);
-    
-    // 向用户发送当前在线用户列表和历史消息
+    // Send current users and messages to the joining user
     callback({
       success: true,
       users: Object.values(rooms[room].users),
       messages: rooms[room].messages
     });
-    
-    // 通知其他用户有新用户加入
-    socket.to(room).emit('user joined', {
-      username,
-      avatar,
-      message: joinMessage
-    });
   });
   
-  // 处理用户发送的聊天消息
+  // Handle chat messages
   socket.on('chat message', (message) => {
     const room = socket.roomId || 'main';
     if (!rooms[room] || !rooms[room].users[socket.id]) return;
@@ -190,81 +263,123 @@ io.on('connection', (socket) => {
       timestamp: Date.now()
     };
     
-    // 保存消息到房间历史记录
+    // Save message
     rooms[room].messages.push(chatMessage);
     
-    // 广播消息给房间内所有用户
+    // If messages exceed a certain limit, trim the oldest ones
+    const MAX_MESSAGES = 200;
+    if (rooms[room].messages.length > MAX_MESSAGES) {
+      const excessMessages = rooms[room].messages.length - MAX_MESSAGES;
+      rooms[room].messages = rooms[room].messages.slice(excessMessages);
+    }
+    
+    // Broadcast to all in room
     io.to(room).emit('chat message', chatMessage);
   });
   
-  // 处理用户断开连接
+  // Handle user disconnection
   socket.on('disconnect', () => {
     const room = socket.roomId;
     if (!room || !rooms[room] || !rooms[room].users[socket.id]) return;
     
-    const { username } = rooms[room].users[socket.id];
-    const userLanguage = socket.language || 'zh';
+    const { username, language } = rooms[room].users[socket.id];
+    const userLanguage = language || 'zh';
     
-    // 创建用户离开的系统消息
+    console.log(`User disconnected: ${username}`);
+    
+    // Create leave message
     const leaveMessage = {
       username: 'System',
-      text: systemMessages[userLanguage].userLeft(username),
+      text: translations[userLanguage].userLeft(username),
       timestamp: Date.now(),
       system: true
     };
     
     rooms[room].messages.push(leaveMessage);
     
-    // 通知其他用户
+    // Notify others
     socket.to(room).emit('user left', {
       username,
       message: leaveMessage
     });
     
-    // 从房间用户列表中移除该用户
+    // Remove user from room
     delete rooms[room].users[socket.id];
-    
-    console.log(`User disconnected: ${username}`);
   });
   
-  // 处理重置聊天室请求
+  // Handle room reset
   socket.on('reset room', (roomId) => {
     const room = roomId || 'main';
     if (!rooms[room]) return;
     
     const userLanguage = socket.language || 'zh';
     
-    // 保存聊天记录到日志
+    // Only admins can reset rooms (or first user as fallback)
+    const isFirstUser = Object.keys(rooms[room].users).length <= 1;
+    if (!isAdmin(socket.username) && !isFirstUser) {
+      return;
+    }
+    
+    // Save logs before reset
     saveRoomLogsToFile(room);
     
-    // 重置房间消息
+    // Reset messages but keep the users
     rooms[room].messages = [];
     
-    // 通知所有用户
+    // Send reset notification
     io.to(room).emit('room reset', {
       username: 'System',
-      text: systemMessages[userLanguage].roomReset,
+      text: translations[userLanguage].roomReset,
       timestamp: Date.now(),
       system: true
     });
   });
+  
+  // Admin functionality - ban user
+  socket.on('ban user', ({ username, duration }) => {
+    if (!isAdmin(socket.username)) return;
+    
+    const room = socket.roomId || 'main';
+    
+    // Find user's socket ID
+    let targetSocketId = null;
+    let targetIP = null;
+    
+    Object.entries(rooms[room].users).forEach(([sid, user]) => {
+      if (user.username === username) {
+        targetSocketId = sid;
+        // In a real app, you'd store the IP with the user
+        targetIP = io.sockets.sockets.get(sid)?.handshake.address;
+      }
+    });
+    
+    if (targetSocketId && targetIP) {
+      // Ban the IP
+      bannedIPs.set(targetIP, {
+        until: Date.now() + duration * 60 * 1000,
+        reason: 'Banned by admin'
+      });
+      
+      // Disconnect the user
+      io.sockets.sockets.get(targetSocketId)?.disconnect(true);
+    }
+  });
 });
 
-// 检查头像目录是否存在
-const avatarPath = path.join(__dirname, '../avatars');
-if (!fs.existsSync(avatarPath)) {
-  console.warn(`注意: 头像目录不存在: ${avatarPath}，将自动创建此目录`);
-  fs.mkdirSync(avatarPath, { recursive: true });
-  console.log(`已创建头像目录: ${avatarPath}`);
-} else {
-  console.log(`头像目录存在: ${avatarPath}`);
-}
+// Cleanup - save logs on server shutdown
+process.on('SIGINT', () => {
+  console.log('Saving chat logs before exit...');
+  Object.keys(rooms).forEach(roomId => {
+    saveRoomLogsToFile(roomId);
+  });
+  process.exit();
+});
 
-// 获取本地IP地址
+// Get the local IP address
 const localIpAddress = getLocalIpAddress();
 
-// 启动服务器
+// Start the server
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`服务器运行在 http://localhost:${PORT}`);
-  console.log(`局域网用户可以通过您的IP地址访问: http://${localIpAddress}:${PORT}`);
+  console.log(`Server running at http://localhost:${PORT}`);
+  console.log(`Local network users can access at: http://${localIpAddress}:${PORT}`);
 });

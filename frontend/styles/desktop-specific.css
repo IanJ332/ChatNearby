@@ -1,0 +1,258 @@
+/* desktop-specific.css - 桌面端专用优化样式 */
+
+/* 确保这些样式只应用于较大屏幕 */
+@media (min-width: 769px) {
+    /* 整体布局优化 */
+    .chat-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      height: 100vh;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* 侧边栏优化 */
+    .sidebar {
+      width: 280px;
+      transition: width 0.3s ease;
+    }
+    
+    .room-info {
+      padding: 20px;
+      height: 120px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    
+    .room-info h1 {
+      font-size: 1.4rem;
+      margin-bottom: 10px;
+    }
+    
+    /* 用户列表优化 */
+    .users-list {
+      padding: 15px;
+    }
+    
+    .user-item {
+      padding: 10px 15px;
+      margin-bottom: 8px;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+    
+    .user-item:hover {
+      background-color: rgba(255, 255, 255, 0.15);
+      transform: translateX(5px);
+    }
+    
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      margin-right: 12px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+    
+    /* 管理控制区优化 */
+    .admin-controls {
+      padding: 15px 20px 20px;
+    }
+    
+    .admin-controls button {
+      padding: 12px;
+      font-size: 15px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+    
+    .admin-controls button:hover {
+      background-color: #d63031;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+    
+    /* 消息区域优化 */
+    .main-content {
+      display: flex;
+      flex-direction: column;
+      background-color: #f9f9f9;
+    }
+    
+    .chat-messages {
+      padding: 25px;
+      background: linear-gradient(to bottom, #f9f9f9, #fff);
+    }
+    
+    /* 消息样式优化 */
+    .message {
+      margin-bottom: 20px;
+      animation: fadeInUp 0.3s ease;
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .message-avatar {
+      width: 45px;
+      height: 45px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      border: 2px solid white;
+    }
+    
+    .message-content {
+      max-width: 65%;
+    }
+    
+    .message-text {
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 15px;
+      line-height: 1.5;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* 自己的消息 */
+    .message.self .message-text {
+      background-color: #3498db;
+      color: white;
+      box-shadow: 0 1px 3px rgba(52, 152, 219, 0.3);
+    }
+    
+    /* 输入区域优化 */
+    .message-input {
+      padding: 15px 25px 20px;
+      background-color: white;
+      border-top: 1px solid #eee;
+    }
+    
+    .message-input textarea {
+      padding: 12px 15px;
+      border-radius: 12px;
+      font-size: 15px;
+      border: 1px solid #ddd;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      transition: all 0.2s ease;
+    }
+    
+    .message-input textarea:focus {
+      border-color: #3498db;
+      box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+    }
+    
+    .message-input button {
+      padding: 0 25px;
+      border-radius: 12px;
+      margin-left: 15px;
+      font-weight: 600;
+      box-shadow: 0 2px 5px rgba(52, 152, 219, 0.3);
+      transition: all 0.2s ease;
+    }
+    
+    .message-input button:hover {
+      background-color: #2980b9;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+    }
+    
+    /* 系统消息优化 */
+    .message.system .message-text {
+      background-color: #f8f9fa;
+      color: #6c757d;
+      border: 1px dashed #dee2e6;
+      font-style: italic;
+      font-size: 14px;
+      text-align: center;
+      margin: 0 auto;
+      max-width: 70%;
+    }
+    
+    .message.join-message .message-text {
+      background-color: #e3f2fd;
+      color: #0d47a1;
+      border: 1px dashed #bbdefb;
+    }
+    
+    .message.leave-message .message-text {
+      background-color: #fff3e0;
+      color: #bf360c;
+      border: 1px dashed #ffe0b2;
+    }
+    
+    /* 滚动条美化 */
+    .chat-messages::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    .chat-messages::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.03);
+      border-radius: 4px;
+    }
+    
+    .chat-messages::-webkit-scrollbar-thumb {
+      background-color: rgba(0, 0, 0, 0.15);
+      border-radius: 4px;
+      transition: background-color 0.3s;
+    }
+    
+    .chat-messages::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(0, 0, 0, 0.25);
+    }
+    
+    /* 语言选择器优化 */
+    .language-selector {
+      margin-top: 15px;
+    }
+    
+    .language-btn {
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+    
+    .language-btn:hover {
+      transform: translateY(-1px);
+    }
+    
+    /* 鼠标指针交互优化 */
+    .message-input button,
+    .admin-controls button,
+    .language-btn,
+    .user-item {
+      cursor: pointer;
+    }
+    
+    /* 登录页面优化 */
+    .login-container {
+      box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
+      border-radius: 12px;
+      padding: 35px;
+      transition: all 0.3s ease;
+    }
+    
+    .login-container:hover {
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    }
+    
+    .login-container h1 {
+      font-size: 1.8rem;
+      margin-bottom: 25px;
+      color: #2c3e50;
+    }
+    
+    .avatar-option {
+      transition: all 0.2s ease;
+    }
+    
+    .avatar-option:hover {
+      transform: scale(1.08);
+    }
+  }

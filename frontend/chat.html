@@ -1,107 +1,87 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <title>聊天室 | Chat Room</title>
-    <link rel="stylesheet" href="/styles/mobile.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chat Room</title>
     <style>
-        /* 你现有的CSS样式保持不变 */
+        /* 基础样式 */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f5f5f5;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            touch-action: manipulation;
+        
+        body, html {
+            height: 100%;
+            font-family: Arial, sans-serif;
             overflow: hidden;
         }
-
-        /* 语言选择器样式 */
-        .language-selector {
-            display: flex;
-            justify-content: center;
-            gap: 5px;
-            margin-top: 10px;
-        }
-
-        .language-btn {
-            padding: 3px 8px;
-            background-color: #34495e;
-            border: 1px solid #2c3e50;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            color: #ddd;
-        }
-
-        .language-btn.active {
-            background-color: #3498db;
-            color: white;
-            border-color: #2980b9;
-        }
-
+        
+        /* 主容器 */
         .chat-container {
             display: flex;
-            flex: 1;
-            overflow: hidden;
-            height: 100%;
+            height: 100vh;
+            width: 100%;
+            background-color: #f5f5f5;
         }
-
+        
+        /* 侧边栏 */
         .sidebar {
-            width: 240px;
+            width: 280px;
             background-color: #2c3e50;
             color: white;
             display: flex;
             flex-direction: column;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
         }
-
+        
         .room-info {
-            padding: 15px;
+            padding: 20px;
             background-color: #34495e;
             text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
-
+        
         .room-info h1 {
-            font-size: 1.2rem;
-            margin-bottom: 5px;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: white;
         }
-
+        
         .users-list {
             flex: 1;
             overflow-y: auto;
-            padding: 10px;
+            padding: 15px;
         }
-
+        
         .user-item {
             display: flex;
             align-items: center;
+            margin-bottom: 10px;
             padding: 8px;
-            border-radius: 4px;
-            margin-bottom: 5px;
+            border-radius: 8px;
+            transition: background-color 0.2s;
         }
-
+        
+        .user-item:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+        
         .user-avatar {
-            width: 32px;
-            height: 32px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            margin-right: 10px;
+            margin-right: 12px;
+            border: 2px solid white;
             object-fit: cover;
         }
-
+        
         .admin-controls {
             padding: 15px;
-            border-top: 1px solid #3a506b;
+            border-top: 1px solid rgba(255,255,255,0.1);
         }
-
+        
         .admin-controls button {
             width: 100%;
             padding: 10px;
@@ -110,27 +90,30 @@
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            font-weight: bold;
         }
-
+        
+        /* 主内容区 */
         .main-content {
             flex: 1;
             display: flex;
             flex-direction: column;
             background-color: white;
         }
-
+        
         .chat-messages {
             flex: 1;
             overflow-y: auto;
             padding: 20px;
-            overscroll-behavior: contain;
+            background-color: #f9f9f9;
         }
-
+        
         .message {
             margin-bottom: 15px;
             display: flex;
+            align-items: flex-start;
         }
-
+        
         .message-avatar {
             width: 40px;
             height: 40px;
@@ -138,255 +121,201 @@
             margin-right: 10px;
             object-fit: cover;
         }
-
+        
         .message-content {
             max-width: 70%;
         }
-
+        
         .message-header {
             display: flex;
             align-items: baseline;
             margin-bottom: 5px;
         }
-
+        
         .message-username {
             font-weight: bold;
             margin-right: 8px;
         }
-
+        
         .message-time {
             font-size: 0.8rem;
             color: #7f8c8d;
         }
-
+        
         .message-text {
             background-color: #f0f0f0;
-            padding: 10px;
-            border-radius: 8px;
-            word-break: break-word;
+            padding: 12px;
+            border-radius: 12px;
+            line-height: 1.4;
         }
-
+        
         .message.self {
             flex-direction: row-reverse;
-            align-self: flex-end;
         }
-
+        
         .message.self .message-avatar {
             margin-right: 0;
             margin-left: 10px;
         }
-
-        .message.self .message-content {
-            align-items: flex-end;
-        }
-
+        
         .message.self .message-header {
             flex-direction: row-reverse;
         }
-
+        
         .message.self .message-username {
             margin-right: 0;
             margin-left: 8px;
         }
-
+        
         .message.self .message-text {
             background-color: #3498db;
             color: white;
         }
-
+        
         .message.system .message-text {
             background-color: #f8f9fa;
             color: #6c757d;
             font-style: italic;
             border: 1px dashed #dee2e6;
         }
-
-        /* 系统消息样式增强 */
+        
         .message.join-message .message-text {
             background-color: #e3f2fd;
             color: #0d47a1;
             border: 1px dashed #bbdefb;
         }
-
+        
         .message.leave-message .message-text {
             background-color: #fff3e0;
             color: #bf360c;
             border: 1px dashed #ffe0b2;
         }
-
+        
         .message-input {
             display: flex;
             padding: 15px;
             background-color: #f8f9fa;
             border-top: 1px solid #e9ecef;
         }
-
+        
         .message-input textarea {
             flex: 1;
             padding: 12px;
             border: 1px solid #ddd;
-            border-radius: 4px;
+            border-radius: 8px;
             resize: none;
-            font-family: inherit;
             font-size: 16px;
+            max-height: 100px;
         }
-
+        
         .message-input button {
             padding: 0 20px;
             margin-left: 10px;
             background-color: #3498db;
             color: white;
             border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        /* 语言选择器 */
+        .language-selector {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .language-btn {
+            padding: 5px 10px;
+            background-color: rgba(52, 73, 94, 0.7);
+            border: 1px solid rgba(44, 62, 80, 0.5);
             border-radius: 4px;
             cursor: pointer;
+            font-size: 14px;
+            color: #ddd;
+            transition: all 0.2s;
         }
-
-        .message-input button:hover {
-            background-color: #2980b9;
+        
+        .language-btn:hover {
+            background-color: rgba(52, 152, 219, 0.5);
         }
-
-        .message-input button:disabled {
-            background-color: #bdc3c7;
-            cursor: not-allowed;
+        
+        .language-btn.active {
+            background-color: #3498db;
+            color: white;
         }
-
-        /* 处理键盘弹出的样式 */
-        body.keyboard-open .sidebar {
-            display: none;
-        }
-
-        body.keyboard-open .chat-messages {
-            max-height: 65vh;
-        }
-
-        /* 响应式设计 */
+        
+        /* 移动端适配 */
         @media (max-width: 768px) {
             .chat-container {
                 flex-direction: column;
             }
-
+            
             .sidebar {
                 width: 100%;
                 max-height: 150px;
-                flex-shrink: 0;
             }
-
+            
+            .room-info {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+            
             .users-list {
                 display: flex;
-                flex-wrap: wrap;
-                gap: 5px;
-                max-height: 80px;
-                overflow-y: auto;
-            }
-
-            .user-item {
-                flex-basis: auto;
-                margin-bottom: 0;
-            }
-
-            .message-content {
-                max-width: 85%;
-            }
-
-            .message-input {
+                overflow-x: auto;
                 padding: 10px;
+                max-height: 60px;
             }
-
-            .message-input textarea {
-                font-size: 16px;
-                /* 防止iOS缩放 */
+            
+            .user-item {
+                flex: 0 0 auto;
+                margin-right: 10px;
+                white-space: nowrap;
             }
-
-            /* 确保聊天界面在移动设备上有更好的空间利用 */
-            .main-content {
-                flex: 1;
-                min-height: 0;
-                display: flex;
-                flex-direction: column;
-            }
-
-            .chat-messages {
-                flex: 1;
-                min-height: 0;
-            }
-
-            /* 小屏幕上减小头像尺寸 */
-            .message-avatar {
-                width: 30px;
-                height: 30px;
-            }
-        }
-
-        /* 适应更小的手机屏幕 */
-        @media (max-width: 480px) {
-            .room-info h1 {
-                font-size: 1rem;
-            }
-
-            .message-text {
-                font-size: 14px;
-            }
-
-            .admin-controls button {
-                padding: 5px;
-                font-size: 12px;
+            
+            .language-selector {
+                margin-top: 0;
             }
         }
     </style>
 </head>
-
 <body>
     <div class="chat-container">
         <div class="sidebar">
             <div class="room-info">
-                <h1 data-lang-key="title">局域网聊天室</h1>
-                <p id="online-count" data-lang-key="online_count">在线人数: 0</p>
+                <h1 id="room-title">Local Network Chat Room</h1>
+                <p id="online-count">Online: 0</p>
                 <div class="language-selector">
-                    <button type="button" class="language-btn active" data-lang="zh">中</button>
-                    <button type="button" class="language-btn" data-lang="en">EN</button>
+                    <button type="button" class="language-btn" data-lang="zh">中</button>
+                    <button type="button" class="language-btn active" data-lang="en">EN</button>
                 </div>
             </div>
             <div class="users-list" id="users-list">
-                <!-- 用户列表会在这里动态生成 -->
+                <!-- User list will be populated here -->
             </div>
             <div class="admin-controls">
-                <button id="reset-chat" data-lang-key="reset_chat">重置聊天室</button>
+                <button id="reset-chat">Reset Chat</button>
             </div>
         </div>
 
         <div class="main-content">
             <div class="chat-messages" id="chat-messages">
-                <!-- 聊天消息会在这里动态生成 -->
+                <!-- Chat messages will be populated here -->
             </div>
 
             <div class="message-input">
-                <textarea id="message-input" data-lang-key="message_placeholder" placeholder="输入消息..."
-                    rows="2"></textarea>
-                <button id="send-button" data-lang-key="send">发送</button>
+                <textarea id="message-input" placeholder="Type a message..." rows="1"></textarea>
+                <button id="send-button">Send</button>
             </div>
         </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        // 从本地存储获取用户信息
-        const username = localStorage.getItem('chat_username');
-        const userAvatar = localStorage.getItem('chat_avatar');
-        let currentLanguage = localStorage.getItem('chat_language') || 'zh';
-
-        // 如果没有用户信息，重定向回登录页面
-        if (!username || !userAvatar) {
-            window.location.href = '/';
-        }
-
-        const socket = io();
-        const messagesList = document.getElementById('chat-messages');
-        const usersList = document.getElementById('users-list');
-        const messageInput = document.getElementById('message-input');
-        const sendButton = document.getElementById('send-button');
-        const onlineCountEl = document.getElementById('online-count');
-        const resetButton = document.getElementById('reset-chat');
-
         // 语言翻译
         const translations = {
             zh: {
@@ -398,7 +327,7 @@
                 confirm_reset: "确定要重置聊天室吗？所有聊天记录将被保存到日志文件。"
             },
             en: {
-                title: "Local Network Chat",
+                title: "Local Network Chat Room",
                 online_count: "Online: ",
                 reset_chat: "Reset Chat",
                 message_placeholder: "Type a message...",
@@ -406,22 +335,74 @@
                 confirm_reset: "Are you sure you want to reset the chat room? All chat history will be saved to log files."
             }
         };
-
+        
+        // 当前语言，默认英文
+        let currentLanguage = localStorage.getItem('chat_language') || 'en';
+        
+        // 应用语言
+        function applyLanguage(lang) {
+            currentLanguage = lang;
+            localStorage.setItem('chat_language', lang);
+            
+            // 更新界面元素
+            document.getElementById('room-title').textContent = translations[lang].title;
+            document.getElementById('reset-chat').textContent = translations[lang].reset_chat;
+            document.getElementById('message-input').placeholder = translations[lang].message_placeholder;
+            document.getElementById('send-button').textContent = translations[lang].send;
+            
+            // 更新在线人数
+            const userCount = parseInt(document.getElementById('online-count').textContent.replace(/[^0-9]/g, '')) || 0;
+            document.getElementById('online-count').textContent = `${translations[lang].online_count}${userCount}`;
+            
+            // 更新语言按钮
+            document.querySelectorAll('.language-btn').forEach(btn => {
+                if (btn.getAttribute('data-lang') === lang) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            // 通知服务器语言变更
+            if (window.socket && socket.connected) {
+                socket.emit('language change', { language: lang });
+            }
+        }
+        
+        // 从本地存储获取用户信息
+        const username = localStorage.getItem('chat_username');
+        const userAvatar = localStorage.getItem('chat_avatar');
+        
+        // 如果没有用户信息，重定向回登录页面
+        if (!username || !userAvatar) {
+            window.location.href = '/';
+        }
+        
+        // 连接Socket.io
+        const socket = io();
+        
+        // 获取DOM元素
+        const messagesList = document.getElementById('chat-messages');
+        const usersList = document.getElementById('users-list');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const resetButton = document.getElementById('reset-chat');
+        
         // 格式化时间
         function formatTime(timestamp) {
             const date = new Date(timestamp);
             return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         }
-
-        // 创建消息元素 - 修改过的函数，支持加入/离开消息样式
+        
+        // 创建消息元素
         function createMessageElement(message, isSelf = false) {
             const messageEl = document.createElement('div');
             messageEl.classList.add('message');
-
+            
             if (isSelf) {
                 messageEl.classList.add('self');
             }
-
+            
             if (message.system) {
                 messageEl.classList.add('system');
                 messageEl.innerHTML = `
@@ -439,18 +420,13 @@
             } else {
                 // 处理头像路径
                 let avatarPath = message.avatar;
-
-                // 如果路径包含旧的/images/avatars路径，更新为新路径
-                if (avatarPath && avatarPath.includes('/images/avatars/')) {
-                    avatarPath = avatarPath.replace('/images/avatars/', '/avatars/');
-                }
-
-                // 确保路径有效，如果无效，使用默认头像
-                if (!avatarPath || !avatarPath.includes('/avatars/')) {
+                
+                // 确保路径有效
+                if (!avatarPath || (!avatarPath.includes('/avatars/') && !avatarPath.startsWith('data:'))) {
                     const avatarName = avatarPath ? avatarPath.split('/').pop() : 'avatar1.png';
                     avatarPath = `/avatars/${avatarName}`;
                 }
-
+                
                 messageEl.innerHTML = `
                     <img class="message-avatar" src="${avatarPath}" alt="${message.username}">
                     <div class="message-content">
@@ -462,94 +438,11 @@
                     </div>
                 `;
             }
-
+            
             return messageEl;
         }
-
-        // 设置语言
-        function setLanguage(lang) {
-            currentLanguage = lang;
-            
-            if (socket && socket.connected) {
-                socket.emit('join room', {
-                roomId: 'main',
-                username,
-                avatar: correctedAvatar,
-                language: lang
-        }, function() {
-            // 无需特别处理返回结果
-        });
-            // 保存语言选择到本地存储
-            localStorage.setItem('chat_language', lang);
-
-            // 更新界面文本
-            document.querySelectorAll('[data-lang-key]').forEach(el => {
-                const key = el.getAttribute('data-lang-key');
-                if (translations[lang][key]) {
-                    if (el.tagName === 'TEXTAREA' && el.hasAttribute('placeholder')) {
-                        el.placeholder = translations[lang][key];
-                    } else if (el.id === 'online-count') {
-                        // 特殊处理在线人数
-                        const usersCount = parseInt(el.textContent.replace(/[^0-9]/g, ''));
-                        el.textContent = `${translations[lang].online_count}${usersCount}`;
-                    } else {
-                        el.textContent = translations[lang][key];
-                    }
-                }
-            });
-
-            // 更新语言按钮状态
-            document.querySelectorAll('.language-btn').forEach(btn => {
-                if (btn.getAttribute('data-lang') === lang) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                }
-            });
-        }
-    }
-        // 初始化语言设置
-        setLanguage(currentLanguage);
-
-        // 处理语言选择
-        document.querySelectorAll('.language-btn').forEach(btn => {
-            btn.addEventListener('click', function () {
-                const lang = this.getAttribute('data-lang');
-                setLanguage(lang);
-            });
-        });
-
-        // 更新用户列表
-        function updateUsersList(users) {
-            usersList.innerHTML = '';
-            users.forEach(user => {
-                // 处理头像路径
-                let avatarPath = user.avatar;
-
-                // 如果路径包含旧的/images/avatars路径，更新为新路径
-                if (avatarPath && avatarPath.includes('/images/avatars/')) {
-                    avatarPath = avatarPath.replace('/images/avatars/', '/avatars/');
-                }
-
-                // 确保路径有效，如果无效，使用默认头像
-                if (!avatarPath || !avatarPath.includes('/avatars/')) {
-                    const avatarName = avatarPath ? avatarPath.split('/').pop() : 'avatar1.png';
-                    avatarPath = `/avatars/${avatarName}`;
-                }
-
-                const userEl = document.createElement('div');
-                userEl.classList.add('user-item');
-                userEl.innerHTML = `
-                    <img class="user-avatar" src="${avatarPath}" alt="${user.username}">
-                    <span>${user.username}</span>
-                `;
-                usersList.appendChild(userEl);
-            });
-
-            onlineCountEl.textContent = `${translations[currentLanguage].online_count}${users.length}`;
-        }
-
-        // 改进滚动到底部功能
+        
+        // 滚动到底部
         function scrollToBottom(smooth = true) {
             const messagesContainer = document.getElementById('chat-messages');
             if (smooth) {
@@ -561,96 +454,94 @@
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
             }
         }
-
+        
         // 发送消息
         function sendMessage() {
             const message = messageInput.value.trim();
             if (message) {
                 socket.emit('chat message', message);
                 messageInput.value = '';
-                // 重置输入框高度
                 messageInput.style.height = 'auto';
+                messageInput.focus();
             }
         }
-
-        // 修正用户头像路径
+        
+        // 更新用户列表
+        function updateUsersList(users) {
+            usersList.innerHTML = '';
+            
+            users.forEach(user => {
+                // 处理头像路径
+                let avatarPath = user.avatar;
+                
+                // 确保路径有效
+                if (!avatarPath || (!avatarPath.includes('/avatars/') && !avatarPath.startsWith('data:'))) {
+                    const avatarName = avatarPath ? avatarPath.split('/').pop() : 'avatar1.png';
+                    avatarPath = `/avatars/${avatarName}`;
+                }
+                
+                const userEl = document.createElement('div');
+                userEl.classList.add('user-item');
+                userEl.innerHTML = `
+                    <img class="user-avatar" src="${avatarPath}" alt="${user.username}">
+                    <span>${user.username}</span>
+                `;
+                usersList.appendChild(userEl);
+            });
+            
+            // 更新在线人数
+            document.getElementById('online-count').textContent = `${translations[currentLanguage].online_count}${users.length}`;
+        }
+        
+        // 修复用户头像路径
         let correctedAvatar = userAvatar;
-
-        // 如果路径包含旧的/images/avatars路径，更新为新路径
-        if (correctedAvatar && correctedAvatar.includes('/images/avatars/')) {
-            correctedAvatar = correctedAvatar.replace('/images/avatars/', '/avatars/');
-            localStorage.setItem('chat_avatar', correctedAvatar);
+        if (!correctedAvatar.startsWith('data:') && !correctedAvatar.includes('/avatars/')) {
+            const avatarName = correctedAvatar.split('/').pop();
+            correctedAvatar = `/avatars/${avatarName}`;
         }
-
-        // 确保路径有效，如果无效，使用默认头像
-        if (!correctedAvatar || !correctedAvatar.includes('/avatars/')) {
-            // 如果是自定义上传的头像（data:image URL），保持不变
-            if (!correctedAvatar || !correctedAvatar.startsWith('data:')) {
-                const avatarName = correctedAvatar ? correctedAvatar.split('/').pop() : 'avatar1.png';
-                correctedAvatar = `/avatars/${avatarName}`;
-                localStorage.setItem('chat_avatar', correctedAvatar);
-            }
-        }
-
-        // 处理移动端视口调整
-        function handleMobileViewport() {
-            // 防止键盘出现时的视口问题
-            const viewportHeight = window.innerHeight;
-            document.documentElement.style.setProperty('--vh', `${viewportHeight * 0.01}px`);
-
-            // 使用自定义属性应用适当的高度
-            document.querySelector('.chat-container').style.height = 'calc(var(--vh, 1vh) * 100)';
-        }
-
-        // 在加载和方向变化时调用
-        window.addEventListener('resize', handleMobileViewport);
-        window.addEventListener('orientationchange', handleMobileViewport);
-        handleMobileViewport();
-
-        // 改进移动端文本输入处理
-        // 自动调整文本区域大小
-        messageInput.addEventListener('input', function () {
-            // 重置高度以进行正确计算
+        
+        // 应用当前语言
+        applyLanguage(currentLanguage);
+        
+        // 自动调整文本区域高度
+        messageInput.addEventListener('input', function() {
             this.style.height = 'auto';
-
-            // 根据内容设置新的高度
-            const newHeight = Math.min(this.scrollHeight, 100);
-            this.style.height = newHeight + 'px';
+            this.style.height = Math.min(this.scrollHeight, 100) + 'px';
         });
-
-        // 防止iOS尝试缩放输入
-        document.addEventListener('gesturestart', function (e) {
-            e.preventDefault();
-        });
-
-        // 修复移动端双击缩放
-        let lastTapTime = 0;
-        document.addEventListener('touchend', function (e) {
-            const currentTime = new Date().getTime();
-            const tapLength = currentTime - lastTapTime;
-            if (tapLength < 500 && tapLength > 0) {
+        
+        // 发送消息事件
+        sendButton.addEventListener('click', sendMessage);
+        
+        // Enter键发送消息
+        messageInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-            }
-            lastTapTime = currentTime;
-        });
-
-        // 确保键盘不会破坏布局
-        window.addEventListener('resize', function () {
-            // 如果键盘可见（窗口高度显著减小）
-            if (window.innerHeight < window.outerHeight * 0.75) {
-                document.body.classList.add('keyboard-open');
-            } else {
-                document.body.classList.remove('keyboard-open');
+                sendMessage();
             }
         });
-
+        
+        // 重置聊天室
+        resetButton.addEventListener('click', function() {
+            if (confirm(translations[currentLanguage].confirm_reset)) {
+                socket.emit('reset room', 'main');
+            }
+        });
+        
+        // 语言切换
+        document.querySelectorAll('.language-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const lang = this.getAttribute('data-lang');
+                applyLanguage(lang);
+            });
+        });
+        
         // 加入聊天室
         socket.emit('join room', {
             roomId: 'main',
             username,
             avatar: correctedAvatar,
-            language: currentLanguage // 添加这一行，传递当前语言设置
-        }, function (response) {
+            language: currentLanguage
+        }, function(response) {
             if (!response.success) {
                 alert(response.message);
                 localStorage.removeItem('chat_username');
@@ -658,92 +549,89 @@
                 window.location.href = '/';
                 return;
             }
-
+            
             // 显示历史消息
             response.messages.forEach(msg => {
                 const isSelf = msg.username === username;
                 const messageEl = createMessageElement(msg, isSelf);
                 messagesList.appendChild(messageEl);
             });
-
+            
             // 滚动到最新消息
             scrollToBottom(false);
-
+            
             // 更新用户列表
-            updateUsersList(Object.values(response.users));
+            updateUsersList(response.users);
         });
-
+        
         // 监听新消息
-        socket.on('chat message', function (message) {
+        socket.on('chat message', function(message) {
             const isSelf = message.username === username;
             const messageEl = createMessageElement(message, isSelf);
             messagesList.appendChild(messageEl);
-
-            // 滚动到最新消息
             scrollToBottom();
         });
-
+        
         // 监听用户加入
-        socket.on('user joined', function (data) {
-            // 添加系统消息
+        socket.on('user joined', function(data) {
             if (data.message) {
-                const messageEl = createMessageElement(data.message, false);
+                const messageEl = createMessageElement(data.message);
                 messagesList.appendChild(messageEl);
                 scrollToBottom();
             }
-
+            
             // 更新用户列表
-            socket.emit('join room', { roomId: 'main', username, avatar: correctedAvatar, language: currentLanguage}, response => {
+            socket.emit('join room', {
+                roomId: 'main',
+                username,
+                avatar: correctedAvatar,
+                language: currentLanguage
+            }, response => {
                 if (response.success) {
-                    updateUsersList(Object.values(response.users));
+                    updateUsersList(response.users);
                 }
             });
         });
-
+        
         // 监听用户离开
-        socket.on('user left', function (data) {
-            // 添加系统消息
+        socket.on('user left', function(data) {
             if (data.message) {
-                const messageEl = createMessageElement(data.message, false);
+                const messageEl = createMessageElement(data.message);
                 messagesList.appendChild(messageEl);
                 scrollToBottom();
             }
-
+            
             // 更新用户列表
-            socket.emit('join room', { roomId: 'main', username, avatar: correctedAvatar, language: currentLanguage}, response => {
+            socket.emit('join room', {
+                roomId: 'main',
+                username,
+                avatar: correctedAvatar,
+                language: currentLanguage
+            }, response => {
                 if (response.success) {
-                    updateUsersList(Object.values(response.users));
+                    updateUsersList(response.users);
                 }
             });
         });
-
+        
         // 监听聊天室重置
-        socket.on('room reset', function (message) {
-            // 清空聊天记录
+        socket.on('room reset', function(message) {
             messagesList.innerHTML = '';
-
-            // 添加重置消息
-            const messageEl = createMessageElement(message, false);
+            const messageEl = createMessageElement(message);
             messagesList.appendChild(messageEl);
+            scrollToBottom();
         });
-
-        // 发送按钮点击事件
-        sendButton.addEventListener('click', sendMessage);
-
-        // 输入框按下Enter键事件
-        messageInput.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
-        });
-
-        // 重置聊天室按钮点击事件
-        resetButton.addEventListener('click', function () {
-            if (confirm(translations[currentLanguage].confirm_reset)) {
-                socket.emit('reset room', 'main');
-            }
-        });
+        
+        // 移动端视口处理
+        function handleMobileViewport() {
+            const viewportHeight = window.innerHeight;
+            document.documentElement.style.setProperty('--vh', `${viewportHeight * 0.01}px`);
+            document.querySelector('.chat-container').style.height = `calc(var(--vh, 1vh) * 100)`;
+        }
+        
+        window.addEventListener('resize', handleMobileViewport);
+        window.addEventListener('orientationchange', handleMobileViewport);
+        setTimeout(handleMobileViewport, 100);
     </script>
 </body>
 </html>

@@ -1,24 +1,26 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>聊天室 | Chat Room</title>
-    <link rel="stylesheet" href="/styles/style.css">
+    <title>Chat Room</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
             font-family: 'Arial', sans-serif;
             background-color: #f5f5f5;
-            margin: 0;
-            padding: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            touch-action: manipulation;
+            padding: 20px;
         }
         
-        /* 语言选择器样式 */
         .language-selector {
             position: absolute;
             top: 10px;
@@ -34,18 +36,23 @@
             border-radius: 4px;
             cursor: pointer;
             font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .language-btn:hover {
+            background-color: #e0e0e0;
         }
         
         .language-btn.active {
-            background-color: #4a90e2;
+            background-color: #3498db;
             color: white;
-            border-color: #4a90e2;
+            border-color: #2980b9;
         }
         
         .login-container {
             background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
             padding: 30px;
             width: 100%;
             max-width: 400px;
@@ -54,7 +61,8 @@
         h1 {
             text-align: center;
             color: #333;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
+            font-size: 1.8rem;
         }
         
         .form-group {
@@ -70,17 +78,22 @@
         
         input[type="text"] {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             border: 1px solid #ddd;
-            border-radius: 4px;
+            border-radius: 8px;
             font-size: 16px;
-            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #3498db;
         }
         
         .avatar-selection {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 12px;
             margin-bottom: 20px;
         }
         
@@ -91,16 +104,21 @@
             cursor: pointer;
             border: 3px solid transparent;
             transition: all 0.2s;
+            overflow: hidden;
+        }
+        
+        .avatar-option:hover {
+            transform: scale(1.05);
         }
         
         .avatar-option.selected {
-            border-color: #4a90e2;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.3);
         }
         
         .avatar-option img {
             width: 100%;
             height: 100%;
-            border-radius: 50%;
             object-fit: cover;
         }
         
@@ -120,36 +138,13 @@
             justify-content: center;
             margin-right: 15px;
             overflow: hidden;
+            border: 1px solid #ddd;
         }
         
         .avatar-preview img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-        }
-        
-        button {
-            display: block;
-            width: 100%;
-            padding: 12px;
-            background-color: #4a90e2;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            transition: background-color 0.2s;
-        }
-        
-        button:hover {
-            background-color: #3a80d2;
-        }
-        
-        #error-message {
-            color: #e74c3c;
-            margin-top: 15px;
-            text-align: center;
         }
         
         .file-input-wrapper {
@@ -165,37 +160,98 @@
             top: 0;
             opacity: 0;
             cursor: pointer;
+            width: 100%;
+            height: 100%;
         }
         
         .file-input-button {
             display: inline-block;
-            padding: 8px 16px;
+            padding: 10px 16px;
             background-color: #f0f0f0;
             border: 1px solid #ddd;
-            border-radius: 4px;
+            border-radius: 8px;
             font-size: 14px;
-            color: #333;
+            color: #555;
+            transition: background-color 0.2s;
+        }
+        
+        .file-input-wrapper:hover .file-input-button {
+            background-color: #e0e0e0;
+        }
+        
+        button[type="submit"] {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.2s;
+            margin-top: 10px;
+        }
+        
+        button[type="submit"]:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+        }
+        
+        #error-message {
+            color: #e74c3c;
+            margin-top: 15px;
+            text-align: center;
+            min-height: 20px;
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 20px;
+            }
+            
+            .avatar-option {
+                width: 45px;
+                height: 45px;
+            }
+            
+            .avatar-preview {
+                width: 45px;
+                height: 45px;
+            }
+            
+            .file-input-button {
+                font-size: 12px;
+                padding: 8px 12px;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+                margin-bottom: 20px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="language-selector">
-        <button type="button" class="language-btn active" data-lang="zh">中文</button>
-        <button type="button" class="language-btn" data-lang="en">English</button>
+        <button type="button" class="language-btn" data-lang="zh">中文</button>
+        <button type="button" class="language-btn active" data-lang="en">English</button>
     </div>
-
+    
     <div class="login-container">
-        <h1 data-lang-key="title">局域网聊天室</h1>
+        <h1 id="page-title">Local Network Chat Room</h1>
         <form id="login-form">
             <div class="form-group">
-                <label for="username" data-lang-key="username">用户名</label>
-                <input type="text" id="username" data-lang-key="username_placeholder" placeholder="请输入2-20个字符的用户名" required>
+                <label for="username" id="username-label">Username</label>
+                <input type="text" id="username" placeholder="Enter 2-20 characters username" maxlength="20" required>
             </div>
             
             <div class="form-group">
-                <label data-lang-key="select_avatar">选择头像</label>
+                <label id="avatar-label">Select Avatar</label>
                 <div class="avatar-selection" id="avatar-selection">
-                    <!-- 默认头像选项 - 更新路径 -->
                     <div class="avatar-option selected" data-avatar="avatar1.png">
                         <img src="/avatars/avatar1.png" alt="Avatar 1">
                     </div>
@@ -218,79 +274,73 @@
             </div>
             
             <div class="form-group">
-                <label data-lang-key="upload_avatar">上传自定义头像</label>
+                <label id="upload-label">Upload Custom Avatar</label>
                 <div class="avatar-upload">
                     <div class="avatar-preview" id="avatar-preview">
                         <img src="/avatars/avatar1.png" alt="Your Avatar">
                     </div>
                     <div class="file-input-wrapper">
-                        <div class="file-input-button" data-lang-key="choose_image">选择图片</div>
-                        <input type="file" id="avatar-upload" accept="image/*">
+                        <div class="file-input-button" id="choose-file-btn">Choose Image</div>
+                        <input type="file" id="avatar-upload" accept="image/jpeg, image/png">
                     </div>
                 </div>
-                <small data-lang-key="image_format">支持JPG, PNG格式，最大2MB</small>
+                <small id="format-help">JPG and PNG formats allowed, max 2MB</small>
             </div>
             
-            <button type="submit" data-lang-key="enter_chat">进入聊天室</button>
+            <button type="submit" id="enter-btn">Enter Chat Room</button>
         </form>
         <div id="error-message"></div>
     </div>
-
+    
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        const socket = io();
-        let selectedAvatar = 'avatar1.png';
-        let customAvatar = null;
-        let currentLanguage = 'zh';
-        
-        // 语言翻译
+        // Language translations
         const translations = {
             zh: {
                 title: "局域网聊天室",
-                username: "用户名",
+                username_label: "用户名",
                 username_placeholder: "请输入2-20个字符的用户名",
-                select_avatar: "选择头像",
-                upload_avatar: "上传自定义头像",
-                choose_image: "选择图片",
-                image_format: "支持JPG, PNG格式，最大2MB",
-                enter_chat: "进入聊天室",
+                avatar_label: "选择头像",
+                upload_label: "上传自定义头像",
+                choose_file: "选择图片",
+                format_help: "支持JPG, PNG格式，最大2MB",
+                enter_button: "进入聊天室",
                 file_too_large: "图片大小不能超过2MB",
                 invalid_format: "只支持JPG和PNG格式"
             },
             en: {
                 title: "Local Network Chat Room",
-                username: "Username",
+                username_label: "Username",
                 username_placeholder: "Enter 2-20 characters username",
-                select_avatar: "Select Avatar",
-                upload_avatar: "Upload Custom Avatar",
-                choose_image: "Choose Image",
-                image_format: "JPG and PNG formats allowed, max 2MB",
-                enter_chat: "Enter Chat Room",
+                avatar_label: "Select Avatar",
+                upload_label: "Upload Custom Avatar",
+                choose_file: "Choose Image",
+                format_help: "JPG and PNG formats allowed, max 2MB",
+                enter_button: "Enter Chat Room",
                 file_too_large: "Image size cannot exceed 2MB",
                 invalid_format: "Only JPG and PNG formats are supported"
             }
         };
         
-        // 设置语言
-        function setLanguage(lang) {
+        // Set default language to English
+        let currentLanguage = localStorage.getItem('chat_language') || 'en';
+        
+        // Apply language function
+        function applyLanguage(lang) {
             currentLanguage = lang;
-            
-            // 保存语言选择到本地存储
             localStorage.setItem('chat_language', lang);
             
-            // 更新界面文本
-            document.querySelectorAll('[data-lang-key]').forEach(el => {
-                const key = el.getAttribute('data-lang-key');
-                if (translations[lang][key]) {
-                    if (el.tagName === 'INPUT' && el.hasAttribute('placeholder')) {
-                        el.placeholder = translations[lang][key];
-                    } else {
-                        el.textContent = translations[lang][key];
-                    }
-                }
-            });
+            // Update UI elements
+            document.getElementById('page-title').textContent = translations[lang].title;
+            document.getElementById('username-label').textContent = translations[lang].username_label;
+            document.getElementById('username').placeholder = translations[lang].username_placeholder;
+            document.getElementById('avatar-label').textContent = translations[lang].avatar_label;
+            document.getElementById('upload-label').textContent = translations[lang].upload_label;
+            document.getElementById('choose-file-btn').textContent = translations[lang].choose_file;
+            document.getElementById('format-help').textContent = translations[lang].format_help;
+            document.getElementById('enter-btn').textContent = translations[lang].enter_button;
             
-            // 更新语言按钮状态
+            // Update language buttons
             document.querySelectorAll('.language-btn').forEach(btn => {
                 if (btn.getAttribute('data-lang') === lang) {
                     btn.classList.add('active');
@@ -300,47 +350,54 @@
             });
         }
         
-        // 从本地存储加载语言设置
-        const savedLanguage = localStorage.getItem('chat_language');
-        if (savedLanguage) {
-            setLanguage(savedLanguage);
-        }
+        // Apply initial language
+        applyLanguage(currentLanguage);
         
-        // 处理语言选择
+        // Language button click handlers
         document.querySelectorAll('.language-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 const lang = this.getAttribute('data-lang');
-                setLanguage(lang);
+                applyLanguage(lang);
             });
         });
         
-        // 处理头像选择
+        // Socket connection
+        const socket = io();
+        let selectedAvatar = 'avatar1.png';
+        let customAvatar = null;
+        
+        // Avatar selection
         document.querySelectorAll('.avatar-option').forEach(option => {
             option.addEventListener('click', function() {
                 document.querySelectorAll('.avatar-option').forEach(o => o.classList.remove('selected'));
                 this.classList.add('selected');
                 selectedAvatar = this.getAttribute('data-avatar');
                 document.querySelector('#avatar-preview img').src = `/avatars/${selectedAvatar}`;
-                customAvatar = null; // 重置自定义头像
+                customAvatar = null; // Reset custom avatar
             });
         });
         
-        // 处理头像上传
+        // Custom avatar upload
         document.getElementById('avatar-upload').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
             
-            // 检查文件大小和类型
+            const errorEl = document.getElementById('error-message');
+            errorEl.textContent = '';
+            
+            // Check file size (max 2MB)
             if (file.size > 2 * 1024 * 1024) {
-                document.getElementById('error-message').textContent = translations[currentLanguage].file_too_large;
+                errorEl.textContent = translations[currentLanguage].file_too_large;
                 return;
             }
             
+            // Check file type
             if (!['image/jpeg', 'image/png'].includes(file.type)) {
-                document.getElementById('error-message').textContent = translations[currentLanguage].invalid_format;
+                errorEl.textContent = translations[currentLanguage].invalid_format;
                 return;
             }
             
+            // Preview image
             const reader = new FileReader();
             reader.onload = function(e) {
                 document.querySelector('#avatar-preview img').src = e.target.result;
@@ -350,23 +407,32 @@
             reader.readAsDataURL(file);
         });
         
-        // 处理表单提交
+        // Form submission
         document.getElementById('login-form').addEventListener('submit', function(e) {
             e.preventDefault();
+            
             const username = document.getElementById('username').value.trim();
-            const errorMsgEl = document.getElementById('error-message');
+            const errorEl = document.getElementById('error-message');
             
-            // 清除之前的错误信息
-            errorMsgEl.textContent = '';
+            // Clear previous errors
+            errorEl.textContent = '';
             
-            // 验证用户名
+            // Validate username format
+            if (!username || username.length < 2 || username.length > 20) {
+                errorEl.textContent = currentLanguage === 'zh' 
+                    ? '用户名应为2-20个字符'
+                    : 'Username should be 2-20 characters';
+                return;
+            }
+            
+            // Check username availability
             socket.emit('check username', { roomId: 'main', username }, function(response) {
                 if (!response.valid) {
-                    errorMsgEl.textContent = response.message;
+                    errorEl.textContent = response.message;
                     return;
                 }
                 
-                // 使用用户名和头像进入聊天室
+                // Username is valid, join the room
                 const avatar = customAvatar || `/avatars/${selectedAvatar}`;
                 
                 socket.emit('join room', {
@@ -376,19 +442,30 @@
                     language: currentLanguage
                 }, function(response) {
                     if (response.success) {
-                        // 保存用户信息到本地存储
+                        // Save user info to localStorage
                         localStorage.setItem('chat_username', username);
                         localStorage.setItem('chat_avatar', avatar);
-                        localStorage.setItem('chat_language', currentLanguage);
                         
-                        // 重定向到聊天室页面
+                        // Redirect to chat page
                         window.location.href = '/chat.html';
                     } else {
-                        errorMsgEl.textContent = response.message;
+                        errorEl.textContent = response.message;
                     }
                 });
             });
         });
+        
+        // Mobile viewport handling
+        function handleMobileViewport() {
+            if (window.innerWidth <= 480) {
+                document.querySelector('.login-container').style.width = 'calc(100% - 20px)';
+            } else {
+                document.querySelector('.login-container').style.width = '';
+            }
+        }
+        
+        window.addEventListener('resize', handleMobileViewport);
+        handleMobileViewport();
     </script>
 </body>
 </html>

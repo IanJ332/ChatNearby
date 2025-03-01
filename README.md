@@ -87,10 +87,9 @@ local-chat-room/
 ```
 
 ### Version Information
-- Version: 1.0.1
-- Update Date: 2025-02-27
-
-## Changes in v1.0.1
+- Version: 1.0.2
+- Update Date: 2025-03-01
+## Updates in v1.0.1
 
 ### Automatic IP Detection
 
@@ -103,6 +102,13 @@ LAN users can access via your IP address: http://192.168.1.5:3000
 ```
 
 You can simply copy and paste this URL to share with friends.
+
+## Updates in v1.0.2
+The chat room now supports bilingual interface switching between Chinese and English. Users can switch languages at any time by clicking the language buttons on the interface, and the settings will be automatically saved. This version uses English as the default interface language, and all system messages and UI elements will be displayed according to the selected language.
+
+**How to use:**
+- Login page: Click the "中文" or "English" button in the top right corner
+- Chat room interface: Click the "中" or "EN" button at the top
 
 ### License
 This project is dual-licensed, you may choose either of the following licenses:
@@ -200,8 +206,8 @@ local-chat-room/
 ```
 
 ### 版本信息
-- 版本号：1.0.1
-- 更新日期：2025-02-27
+- 版本号：1.0.2
+- 更新日期：2025-03-01
 
 ## v1.0.1 版本更新内容
 
@@ -216,6 +222,14 @@ local-chat-room/
 ```
 
 您可以直接复制粘贴此URL与朋友分享。
+
+### 1.0.2 版本更新内容 - 多语言支持
+
+聊天室现已支持中英文双语界面切换功能。用户可以通过点击界面上的语言按钮随时切换语言，且设置会被自动保存。此版本默认使用英文界面，所有系统消息和用户界面元素都会根据所选语言进行显示。
+
+**使用方法:**
+- 登录页面：点击右上角的"中文"或"English"按钮
+- 聊天室界面：点击顶部的"中"或"EN"按钮
 
 ### 许可证
 本项目采用双重许可模式，您可以选择使用以下任一许可证：
