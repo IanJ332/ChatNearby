@@ -25,11 +25,25 @@
   
   /* Chat container - ensure it fills viewport properly */
   .chat-container {
-    height: 100%;
+    height: 100svh; /* 使用安全视口高度 - 支持新浏览器 */
+    height: calc(var(--vh, 1vh) * 100); /* 兼容性回退方案 */
     width: 100%;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+  }
+  
+  /* 针对消息的特定样式 */
+  .message.join-message .message-text {
+    background-color: #e3f2fd;
+    color: #0d47a1;
+    border: 1px dashed #bbdefb;
+  }
+  
+  .message.leave-message .message-text {
+    background-color: #fff3e0;
+    color: #bf360c; 
+    border: 1px dashed #ffe0b2;
   }
   
   /* Better mobile sidebar handling */
@@ -116,6 +130,8 @@
       -webkit-overflow-scrolling: touch;
       padding: 10px;
       min-height: 0;
+      overscroll-behavior: contain;
+      padding-bottom: 20px;
     }
     
     /* Message styling improvements */
@@ -190,21 +206,74 @@
     }
   }
   
-  /* Fix for specific connection message styling */
-  .message .message-text:contains("加入") {
-    background-color: #e3f2fd;
-    color: #0d47a1;
-    border: 1px dashed #bbdefb;
+/* Fix Safari-specific issues with flex */
+@supports (-webkit-touch-callout: none) {
+  .chat-container, .main-content, .chat-messages {
+    height: 100%;
+    -webkit-overflow-scrolling: touch;
   }
   
-  .message .message-text:contains("离开") {
-    background-color: #fff3e0;
-    color: #bf360c;
-    border: 1px dashed #ffe0b2;
+  .sidebar {
+    flex-shrink: 0;
   }
   
-  /* Fix Safari-specific issues with flex */
-  @supports (-webkit-touch-callout: none) {
+  .main-content {
+    flex: 1 0 auto;
+  }
+}
+
+/* Fix for virtual keyboard issues */
+@media (max-height: 450px) {
+  .sidebar {
+    max-height: 80px;
+  }
+  
+  .users-list {
+    max-height: 40px;
+  }
+}
+
+/* 处理键盘弹出的样式 */
+body.keyboard-open .sidebar {
+  display: none;
+}
+
+body.keyboard-open .chat-messages {
+  max-height: 65vh;
+}
+
+/* 提高消息可读性 */
+.message.system .message-text {
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+/* 修复iOS特定的触摸事件问题 */
+@supports (-webkit-touch-callout: none) {
+  body {
+    cursor: pointer; /* 强制iOS识别触摸区域 */
+  }
+  
+  .message-input textarea:focus {
+    transform: translateY(0); /* 防止iOS键盘弹出时的页面跳动 */
+    position: relative;
+    z-index: 5;
+  }
+}
+
+/* 按钮触摸区域优化 */
+.message-input button, .admin-controls button, .language-btn {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 更好的视觉反馈 */
+.message-input button:active, .admin-controls button:active, .language-btn:active {
+  opacity: 0.7;
+}
+
+/* Fix Safari-specific issues with flex */
+@supports (-webkit-touch-callout: none) {
     .chat-container, .main-content, .chat-messages {
       height: 100%;
       -webkit-overflow-scrolling: touch;
@@ -228,4 +297,43 @@
     .users-list {
       max-height: 40px;
     }
+  }
+  
+  /* 处理键盘弹出的样式 */
+  body.keyboard-open .sidebar {
+    display: none;
+  }
+  
+  body.keyboard-open .chat-messages {
+    max-height: 65vh;
+  }
+  
+  /* 提高消息可读性 */
+  .message.system .message-text {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  
+  /* 修复iOS特定的触摸事件问题 */
+  @supports (-webkit-touch-callout: none) {
+    body {
+      cursor: pointer; /* 强制iOS识别触摸区域 */
+    }
+    
+    .message-input textarea:focus {
+      transform: translateY(0); /* 防止iOS键盘弹出时的页面跳动 */
+      position: relative;
+      z-index: 5;
+    }
+  }
+  
+  /* 按钮触摸区域优化 */
+  .message-input button, .admin-controls button, .language-btn {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* 更好的视觉反馈 */
+  .message-input button:active, .admin-controls button:active, .language-btn:active {
+    opacity: 0.7;
   }

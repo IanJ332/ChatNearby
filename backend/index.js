@@ -30,6 +30,20 @@ function getLocalIpAddress() {
   return ipAddress;
 }
 
+// 系统消息的多语言支持
+const systemMessages = {
+  zh: {
+    userJoined: username => `${username} 加入了聊天室`,
+    userLeft: username => `${username} 离开了聊天室`,
+    roomReset: '聊天室已重置，历史记录已保存'
+  },
+  en: {
+    userJoined: username => `${username} joined the chat room`,
+    userLeft: username => `${username} left the chat room`,
+    roomReset: 'Chat room has been reset, history saved'
+  }
+};
+
 // 创建必要的目录
 const createDirectories = () => {
   const dirs = ['logs', 'temp'];
@@ -114,9 +128,9 @@ io.on('connection', (socket) => {
     callback({ valid: true });
   });
   
-  // 用户加入房间
   socket.on('join room', (data, callback) => {
-    const { roomId, username, avatar } = data;
+    const { roomId, username, avatar, language } = data; // 添加language参数
+    const userLanguage = language || 'en'; // 默认使用英文
     const room = roomId || 'main';
     
     // 确保房间存在
@@ -135,12 +149,13 @@ io.on('connection', (socket) => {
     // 将用户加入房间
     socket.join(room);
     socket.roomId = room; // 保存用户当前所在房间ID
-    rooms[room].users[socket.id] = { username, avatar };
+    socket.language = userLanguage; // 保存用户的语言偏好
+    rooms[room].users[socket.id] = { username, avatar, language: userLanguage };
     
-    // 发送欢迎消息
+    // 发送欢迎消息 - 使用用户的语言偏好
     const joinMessage = {
       username: 'System',
-      text: `${username} 加入了聊天室`,
+      text: systemMessages[userLanguage].userJoined(username),
       timestamp: Date.now(),
       system: true
     };
@@ -188,11 +203,12 @@ io.on('connection', (socket) => {
     if (!room || !rooms[room] || !rooms[room].users[socket.id]) return;
     
     const { username } = rooms[room].users[socket.id];
+    const userLanguage = socket.language || 'zh';
     
     // 创建用户离开的系统消息
     const leaveMessage = {
       username: 'System',
-      text: `${username} 离开了聊天室`,
+      text: systemMessages[userLanguage].userLeft(username),
       timestamp: Date.now(),
       system: true
     };
@@ -216,6 +232,8 @@ io.on('connection', (socket) => {
     const room = roomId || 'main';
     if (!rooms[room]) return;
     
+    const userLanguage = socket.language || 'zh';
+    
     // 保存聊天记录到日志
     saveRoomLogsToFile(room);
     
@@ -225,7 +243,7 @@ io.on('connection', (socket) => {
     // 通知所有用户
     io.to(room).emit('room reset', {
       username: 'System',
-      text: '聊天室已重置，历史记录已保存',
+      text: systemMessages[userLanguage].roomReset,
       timestamp: Date.now(),
       system: true
     });
